@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiWebApp", "ApiWebApp\ApiWebApp.csproj", "{AD339F83-3909-44C4-A1CE-CEB4DA034FA1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StudentApi", "StudentApi\StudentApi.csproj", "{1CA87A5F-4E9E-4801-B36C-BDFD3301BB34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseApi", "CourseApi\CourseApi.csproj", "{0AD5E465-98A1-4D61-9243-926483318E7D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AD339F83-3909-44C4-A1CE-CEB4DA034FA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD339F83-3909-44C4-A1CE-CEB4DA034FA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD339F83-3909-44C4-A1CE-CEB4DA034FA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD339F83-3909-44C4-A1CE-CEB4DA034FA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CA87A5F-4E9E-4801-B36C-BDFD3301BB34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CA87A5F-4E9E-4801-B36C-BDFD3301BB34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CA87A5F-4E9E-4801-B36C-BDFD3301BB34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CA87A5F-4E9E-4801-B36C-BDFD3301BB34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AD5E465-98A1-4D61-9243-926483318E7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AD5E465-98A1-4D61-9243-926483318E7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AD5E465-98A1-4D61-9243-926483318E7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AD5E465-98A1-4D61-9243-926483318E7D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
