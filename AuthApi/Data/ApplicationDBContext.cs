@@ -1,7 +1,6 @@
-﻿
-using Microsoft.AspNetCore.Identity;
+﻿using AuthApi.Models;
 using Microsoft.EntityFrameworkCore;
-namespace ApiWebApp;
+namespace AuthApi.Data;
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseApi.Controllers
@@ -10,7 +11,10 @@ namespace CourseApi.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok("Hello Course There!");
+            var UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var UserName = User.FindFirstValue(ClaimTypes.Name);
+            var Email = User.FindFirstValue(ClaimTypes.Email);
+            return Ok($"Hello User {UserId}! {UserName} {Email} You are authorized to access this endpoint.COURSE");
         }
 
         [HttpGet]
