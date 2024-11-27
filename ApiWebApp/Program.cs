@@ -1,40 +1,55 @@
-using ApiWebApp;
+using ApiWebApp.Middlewares;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
     .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 builder.Services.AddOcelot(builder.Configuration);
-var _GetConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
-{
-    options.UseNpgsql(_GetConnectionString);
-});
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
 // Add CORS
+builder.Services.AddControllers();
+var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
+var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");
+var authSigningKey = Environment.GetEnvironmentVariable("JWTKeySecret");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = _JWTKeyValidIssuer,
+        ValidateAudience = true,
+        ValidAudience = _JWTKeyValidAudience,
+        ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromSeconds(0),
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(authSigningKey))
+    };
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Open", builder =>
         builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
 var app = builder.Build();
-if (app.Environment.IsDevelopment())
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseHttpContextInspection();
+app.UseCustomMiddleware();
+app.UseEndpoints(endpoints =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API Name v1"));
-}
-app.UseHttpsRedirection();
-
+    endpoints.MapControllers();
+});
 app.UseOcelot().Wait();
+
 app.Run();
