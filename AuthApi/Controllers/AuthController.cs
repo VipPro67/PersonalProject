@@ -1,10 +1,8 @@
-﻿using System.Security.Claims;
-using AuthApi.DTOs;
+﻿using AuthApi.DTOs;
 using AuthApi.Helpers;
 using AuthApi.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace AuthApi.Controllers
 {
@@ -13,51 +11,40 @@ namespace AuthApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+
         public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
 
-        [HttpGet]
-        public IActionResult Get()
-        {
-            return Ok("Hello Auth There!");
-        }
-
         [HttpPost]
         [Route("register")]
-        public async Task<IActionResult> Register(RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
             var result = await _authService.Register(registerDto);
             if (!result.Success)
             {
-                return StatusCode(400, new ErrorResponse(400, "Registration failed", result.Message));
+                Log.Error($"Failed to register user: {registerDto.UserName}", registerDto.UserName);
+                return StatusCode(400, new ErrorResponse(400, "Registration failed", result.Message ?? "Unknown error"));
             }
-            return Ok(new SuccessResponse(200, result.Message, result.Token));
+            Log.Information($"User {registerDto.UserName} registered successfully", registerDto.UserName);
+            return Ok(new SuccessResponse(200, result.Message ?? "Registration successful", result.Token));
         }
-
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login(LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
+            //Log current Accept-Language header for localization
+            Log.Information($"Current Accept-Language header: {Request.Headers["Accept-Language"]}");
             var result = await _authService.Login(loginDto);
             if (!result.Success)
             {
-                return StatusCode(401, new ErrorResponse(401, "Login failed", result.Message));
+                Log.Information($"Failed login attempt for user: {loginDto.UserName}", loginDto.UserName);
+                return StatusCode(401, new ErrorResponse(401, "Login failed", result.Message ?? "Invalid credentials"));
             }
-            return Ok(new SuccessResponse(200, result.Message, result.Token));
-
-        }
-
-        [HttpGet("protected")]
-        [Authorize]
-        public IActionResult ProtectedEndpoint()
-        {
-            var UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var UserName = User.FindFirstValue(ClaimTypes.Name);
-            var Email = User.FindFirstValue(ClaimTypes.Email);
-            return Ok($"Hello User {UserId}! {UserName} {Email} You are authorized to access this endpoint.");
+            Log.Information($"User {loginDto.UserName} logged in successfully", loginDto.UserName);
+            return Ok(new SuccessResponse(200, result.Message ?? "Login successful", result.Token));
         }
     }
 }

@@ -31,7 +31,7 @@ namespace AuthApi.Services
         public async Task<AuthResult> Register(RegisterDto registerDto)
         {
             var result = new AuthResult();
-            if (await _userRepository.IsUserExistAsync(registerDto.Email.ToLowerInvariant(), registerDto.UserName.ToLowerInvariant()))
+            if (await _userRepository.IsUserExistAsync(registerDto.Email, registerDto.UserName))
             {
                 result.Success = false;
                 result.Message = "User already exists! Please choose a different username or email.";
@@ -39,8 +39,8 @@ namespace AuthApi.Services
             }
             AppUser newUser = new AppUser
             {
-                Email = registerDto.Email.ToLowerInvariant(),
-                UserName = registerDto.UserName.ToLowerInvariant(),
+                Email = registerDto.Email,
+                UserName = registerDto.UserName,
                 PasswordHash = PasswordHelper.HashPassword(registerDto.Password),
                 FullName = registerDto.FullName,
                 Address = registerDto.Address,

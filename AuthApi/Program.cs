@@ -1,17 +1,25 @@
-using AuthApi;
 using AuthApi.Data;
 using AuthApi.Repositories;
 using AuthApi.Services;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-
 using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using FluentValidation;
+using AuthApi.Validators;
+using FluentValidation.AspNetCore;
+using AuthApi.Filters;
+using Serilog;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 Env.Load();
+
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -47,6 +55,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(_GetConnectionString);
 });
+
+builder.Services.AddMvc().AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+});
 // Add services to the container.
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -56,6 +69,21 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
+//using fluentValidation;
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddFluentValidationAutoValidation()
+    .AddFluentValidationClientsideAdapters()
+    .AddValidatorsFromAssemblyContaining<RegisterDtoValidator>()
+    .AddValidatorsFromAssemblyContaining<LoginDtoValidator>();
+builder.Services.AddControllers(options =>
+{
+
+    options.Filters.Add(typeof(ValidateModelStateFilter));
+}).ConfigureApiBehaviorOptions(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
+}).AddDataAnnotationsLocalization();
+
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
 var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");
 var authSigningKey = Environment.GetEnvironmentVariable("JWTKeySecret");
@@ -80,7 +108,21 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+Log.Information("Web application started");
+var supportedCultures = new[]
+{
+    new CultureInfo("en"),
+    new CultureInfo("vi")
+};
 
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("en"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+app.UseHttpsRedirection();
+app.UseSerilogRequestLogging();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -88,10 +130,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 
 app.MapControllers();
-
-
 app.Run();
 
