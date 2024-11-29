@@ -34,5 +34,6 @@ public class Course
     public DateOnly? EndDate { get; set; }
 
     [Required]
+    [StringLength(100)]
     public string? Schedule { get; set; }
 }

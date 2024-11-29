@@ -2,22 +2,15 @@
 using FluentValidation;
 
 namespace CourseApi.Validators;
-public class CreateCourseDtoValidator : AbstractValidator<CreateCourseDto>
+public class UpdateCourseDtoValidator : AbstractValidator<UpdateCourseDto>
 {
-    public CreateCourseDtoValidator()
+    public UpdateCourseDtoValidator()
     {
-        RuleFor(x => x.CourseId)
-            .NotEmpty().WithMessage("CourseId is required")
-            .MaximumLength(10).WithMessage("CourseId should not exceed 10 characters")
-            .MinimumLength(3).WithMessage("CourseId should not be less than 3 characters")
-            .Matches(@"^[^\s]*$").WithMessage("CourseId should not contain any spaces")
-            .Matches(@"^[a-zA-Z0-9]*$").WithMessage("CourseId should only contain alphanumeric characters");
-
         RuleFor(x => x.CourseName)
             .NotEmpty().WithMessage("CourseName is required")
             .MaximumLength(100).WithMessage("CourseName should not exceed 100 characters")
             .MinimumLength(5).WithMessage("CourseName should not be less than 5 characters")
-            .Matches(@"^[a-zA-Z0-9\s]*$").WithMessage("CourseName should only contain alphanumeric and spaces");
+            .Matches("^[A-Za-z ]+$").WithMessage("CourseName should only contain alphabetic characters and spaces");
 
         RuleFor(x => x.Description)
             .NotEmpty().WithMessage("CourseDescription is required")
