@@ -45,12 +45,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseGlobalExceptionHandling();
-app.UseHttpContextInspection();
 app.UseCustomMiddleware();
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllers();
-});
 app.UseOcelot().Wait();
 
 app.Run();
