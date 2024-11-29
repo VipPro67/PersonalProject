@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AuthApi.DTOs;
 using AuthApi.Repositories;
-using AuthApi.Helper;
+using AuthApi.Helpers;
 using AuthApi.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;

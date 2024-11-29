@@ -44,6 +44,7 @@ var app = builder.Build();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseGlobalExceptionHandling();
 app.UseHttpContextInspection();
 app.UseCustomMiddleware();
 app.UseEndpoints(endpoints =>

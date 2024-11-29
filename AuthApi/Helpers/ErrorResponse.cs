@@ -1,3 +1,4 @@
+namespace AuthApi.Helpers;
 public class ErrorResponse
 {
     public int Status { get; set; }

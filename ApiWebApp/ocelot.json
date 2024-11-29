@@ -20,7 +20,10 @@
         {
             "UpstreamPathTemplate": "/api/courses/{everything}",
             "UpstreamHttpMethod": [
-                "GET"
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
             ],
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
@@ -38,7 +41,10 @@
         {
             "UpstreamPathTemplate": "/api/students/{everything}",
             "UpstreamHttpMethod": [
-                "GET"
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
             ],
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [

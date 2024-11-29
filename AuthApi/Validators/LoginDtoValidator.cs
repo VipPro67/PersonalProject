@@ -1,13 +1,20 @@
 using FluentValidation;
 using AuthApi.DTOs;
 using Microsoft.Extensions.Localization;
+using Serilog;
+using System.Globalization;
+using System.Reflection;
+using System.Resources;
 
 namespace AuthApi.Validators;
 
 public class LoginDtoValidator : AbstractValidator<LoginDto>
 {
-    public LoginDtoValidator(IStringLocalizer<LoginDto> localizer)
+    private readonly IStringLocalizer<LoginDto> _localizer;
+
+    public LoginDtoValidator(IStringLocalizer<LoginDto> localizer, IStringLocalizerFactory factory)
     {
+        _localizer = localizer;
         RuleFor(x => x.UserName)
             .NotEmpty().WithMessage(x => localizer["Username is required"])
             .MaximumLength(50).WithMessage(x => localizer["Username must be at most 50 characters long"])
