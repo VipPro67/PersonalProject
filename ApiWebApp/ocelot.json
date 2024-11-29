@@ -6,7 +6,7 @@
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
-                    "Port": 5000
+                    "Port": 5005
                 }
             ],
             "UpstreamPathTemplate": "/api/auth/{everything}",
@@ -20,7 +20,10 @@
         {
             "UpstreamPathTemplate": "/api/courses/{everything}",
             "UpstreamHttpMethod": [
-                "Get"
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
             ],
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
@@ -29,12 +32,19 @@
                     "Port": 5001
                 }
             ],
-            "DownstreamPathTemplate": "/api/courses/{everything}"
+            "DownstreamPathTemplate": "/api/courses/{everything}",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
         },
         {
             "UpstreamPathTemplate": "/api/students/{everything}",
             "UpstreamHttpMethod": [
-                "Get"
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
             ],
             "DownstreamScheme": "https",
             "DownstreamHostAndPorts": [
@@ -43,7 +53,11 @@
                     "Port": 5002
                 }
             ],
-            "DownstreamPathTemplate": "/api/students/{everything}"
+            "DownstreamPathTemplate": "/api/students/{everything}",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            }
         }
     ],
     "GlobalConfiguration": {

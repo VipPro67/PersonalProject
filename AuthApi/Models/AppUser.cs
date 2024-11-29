@@ -1,8 +1,7 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace ApiWebApp;
+namespace AuthApi.Models;
 
 [Index(nameof(UserName), IsUnique = true)]
 [Index(nameof(Email), IsUnique = true)]
@@ -22,7 +21,7 @@ public class AppUser
     //make this type nvarchar(100)
     [MaxLength(100)]
     public string? FullName { get; set; }
-    [MaxLength(255)]
+    [MaxLength(200)]
     public string? Address { get; set; }
     public DateOnly? DateOfBirth { get; set; }
 }
