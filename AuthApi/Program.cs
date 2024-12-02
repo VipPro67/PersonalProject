@@ -28,7 +28,7 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     var supportedCultures = new List<CultureInfo> { new CultureInfo("en-US"), new CultureInfo("vi-VN") };
-    options.DefaultRequestCulture = new RequestCulture("vi-VN");
+    options.DefaultRequestCulture = new RequestCulture("en - US");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
     options.RequestCultureProviders.Insert(0, new AcceptLanguageHeaderRequestCultureProvider());
@@ -62,10 +62,19 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience"),
         ValidateIssuerSigningKey = true,
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.FromSeconds(0),
+        ClockSkew = TimeSpan.FromSeconds(0), // If clock skew > 0. This will make token exprire can continues to be valid. Default 300 secs
         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWTKeySecret")))
     };
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAPIGateWay",
+        builder => builder
+            .WithOrigins(Environment.GetEnvironmentVariable("APIGateWay")) // Replace with your allowed origins
+            .AllowAnyHeader()
+            .WithMethods("POST"));
+});
+
 
 var app = builder.Build();
 Log.Information("Web application started");
@@ -73,7 +82,7 @@ Log.Information("Web application started");
 app.UseRequestLocalization(options =>
 {
     options.ApplyCurrentCultureToResponseHeaders = true;
-}); 
+});
 app.UseHttpsRedirection();
 app.UseSerilogRequestLogging();
 
@@ -84,10 +93,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseCors("AllowAPIGateWay");
 app.UseGlobalExceptionHandling();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
