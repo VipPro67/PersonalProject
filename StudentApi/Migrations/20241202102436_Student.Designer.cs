@@ -12,7 +12,7 @@ using StudentApi.Data;
 namespace StudentApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241202030616_Student")]
+    [Migration("20241202102436_Student")]
     partial class Student
     {
         /// <inheritdoc />
@@ -34,31 +34,33 @@ namespace StudentApi.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("StudentId"));
 
                     b.Property<string>("Address")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateOnly>("DateOfBirth")
                         .HasColumnType("date");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int>("Grade")
                         .HasColumnType("integer");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("varchar(20)");
 
                     b.HasKey("StudentId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
 
                     b.ToTable("Students");
 
@@ -71,7 +73,7 @@ namespace StudentApi.Migrations
                             Email = "john.doe@example.com",
                             FullName = "Joh Doe",
                             Grade = 2,
-                            PhoneNumber = "555-123-4567"
+                            PhoneNumber = "5551234567"
                         },
                         new
                         {
@@ -81,7 +83,7 @@ namespace StudentApi.Migrations
                             Email = "jane.smith@example.com",
                             FullName = "Jane Smith",
                             Grade = 1,
-                            PhoneNumber = "123-456-7890"
+                            PhoneNumber = "1234567890"
                         });
                 });
 #pragma warning restore 612, 618

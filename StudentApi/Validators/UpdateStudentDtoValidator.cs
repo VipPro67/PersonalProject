@@ -16,6 +16,7 @@ public class UpdateStudentDtoValidator : AbstractValidator<UpdateStudentDto>
             .MaximumLength(100).WithMessage("FullName should not exceed 100 characters");
 
         RuleFor(x => x.PhoneNumber)
+            .NotEmpty().WithMessage("PhoneNumber is required")
             .MaximumLength(20).WithMessage("PhoneNumber should not exceed 20 characters")
             .Matches("[0-9]").WithMessage("PhoneNumber should only contain numeric characters");
 

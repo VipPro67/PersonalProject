@@ -65,13 +65,21 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(authSigningKey))
     };
 });
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowCors",
+        builder => builder
+            .WithOrigins(Environment.GetEnvironmentVariable("CORS_ORIGINS").Split(','))
+            .AllowAnyHeader()
+            .WithMethods("GET", "POST", "PUT", "DELETE"));
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 app.UseRouting();
+app.UseCors("AllowCors");
 app.UseGlobalExceptionHandling();
 
 app.UseSerilogRequestLogging();
@@ -81,7 +89,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
 app.MapControllers();
 app.UseAuthentication();

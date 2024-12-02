@@ -27,6 +27,10 @@ public class CreateStudentDtoValidator : AbstractValidator<CreateStudentDto>
         RuleFor(x => x.Grade)
             .NotEmpty().WithMessage("Grade is required")
             .InclusiveBetween(1, 8).WithMessage("Grade should be between 1 and 8");
+
+        RuleFor(x => x.Address)
+            .MaximumLength(100).WithMessage("Address should not exceed 100 characters");
+
     }
 }
 
