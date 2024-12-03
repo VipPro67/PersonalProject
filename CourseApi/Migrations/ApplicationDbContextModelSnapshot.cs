@@ -30,8 +30,7 @@ namespace CourseApi.Migrations
 
                     b.Property<string>("CourseName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<int?>("Credit")
                         .IsRequired()
@@ -39,13 +38,11 @@ namespace CourseApi.Migrations
 
                     b.Property<string>("Department")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("varchar(500)");
 
                     b.Property<DateOnly?>("EndDate")
                         .IsRequired()
@@ -53,8 +50,7 @@ namespace CourseApi.Migrations
 
                     b.Property<string>("Instructor")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("varchar(100)");
 
                     b.Property<string>("Schedule")
                         .IsRequired()
@@ -103,9 +99,87 @@ namespace CourseApi.Migrations
                             Description = "This course covers the basics of IT security and how to protect your digital assets.",
                             EndDate = new DateOnly(2025, 2, 22),
                             Instructor = "Bob Johnson",
-                            Schedule = " 2:00 PM - 5:00 PM Thu",
+                            Schedule = "2:00 PM - 5:00 PM Thu",
                             StartDate = new DateOnly(2024, 9, 15)
                         });
+                });
+
+            modelBuilder.Entity("CourseApi.Models.Enrollment", b =>
+                {
+                    b.Property<int>("EnrollmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EnrollmentId"));
+
+                    b.Property<string>("CourseId")
+                        .IsRequired()
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<int?>("StudentId")
+                        .IsRequired()
+                        .HasColumnType("integer");
+
+                    b.HasKey("EnrollmentId");
+
+                    b.HasIndex("CourseId");
+
+                    b.ToTable("Enrollments");
+
+                    b.HasData(
+                        new
+                        {
+                            EnrollmentId = 1,
+                            CourseId = "C001",
+                            StudentId = 1
+                        },
+                        new
+                        {
+                            EnrollmentId = 2,
+                            CourseId = "OOP",
+                            StudentId = 1
+                        },
+                        new
+                        {
+                            EnrollmentId = 3,
+                            CourseId = "IT007",
+                            StudentId = 1
+                        },
+                        new
+                        {
+                            EnrollmentId = 4,
+                            CourseId = "C001",
+                            StudentId = 2
+                        },
+                        new
+                        {
+                            EnrollmentId = 5,
+                            CourseId = "OOP",
+                            StudentId = 2
+                        },
+                        new
+                        {
+                            EnrollmentId = 6,
+                            CourseId = "IT007",
+                            StudentId = 2
+                        });
+                });
+
+            modelBuilder.Entity("CourseApi.Models.Enrollment", b =>
+                {
+                    b.HasOne("CourseApi.Models.Course", "Course")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Enrollment_Course");
+
+                    b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("CourseApi.Models.Course", b =>
+                {
+                    b.Navigation("Enrollments");
                 });
 #pragma warning restore 612, 618
         }

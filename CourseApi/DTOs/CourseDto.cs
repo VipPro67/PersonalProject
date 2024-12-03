@@ -1,4 +1,4 @@
-﻿namespace CourseApi;
+﻿namespace CourseApi.DTOs;
 public class CourseDto
 {
     public string? CourseId { get; set; }

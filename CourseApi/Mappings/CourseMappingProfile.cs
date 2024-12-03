@@ -19,6 +19,12 @@ namespace CourseApi.Mappings
             CreateMap<Course, CourseDto>()
                 .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate.HasValue ? src.StartDate.Value.ToString("yyyy-MM-dd") : null))
                 .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate.HasValue ? src.EndDate.Value.ToString("yyyy-MM-dd") : null));
+
+            // Map for Enrollment to EnrollmentDto
+            CreateMap<Enrollment, EnrollmentDto>();
+
+            // Map for EnrollmentDto to Enrollment
+            CreateMap<CreateEnrollmentDto, Enrollment>();
         }
     }
 }
