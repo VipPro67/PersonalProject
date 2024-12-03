@@ -1,6 +1,7 @@
 ﻿using AuthApi.DTOs;
 using AuthApi.Helpers;
 using AuthApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
@@ -28,7 +29,7 @@ namespace AuthApi.Controllers
                 return StatusCode(400, new ErrorResponse(400, "Registration failed", result.Message ?? "Unknown error"));
             }
             Log.Information($"User {registerDto.UserName} registered successfully", registerDto.UserName);
-            return Ok(new SuccessResponse(200, result.Message ?? "Registration successful", result.Token));
+            return Ok(new SuccessResponse(200, result.Message ?? "Registration successful", result.AccessToken));
         }
 
         [HttpPost]
@@ -44,7 +45,43 @@ namespace AuthApi.Controllers
                 return StatusCode(401, new ErrorResponse(401, "Login failed", result.Message ?? "Invalid credentials"));
             }
             Log.Information($"User {loginDto.UserName} logged in successfully", loginDto.UserName);
-            return Ok(new SuccessResponse(200, result.Message ?? "Login successful", result.Token));
+            return Ok(new SuccessResponse(200, result.Message ?? "Login successful", new
+            {
+                result.AccessToken,
+                result.RefreshToken
+            }));
+        }
+        [HttpPost]
+        [Route("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
+        {
+            var result = await _authService.RefreshToken(refreshTokenDto.RefreshToken);
+            if (!result.Success)
+            {
+                return StatusCode(401, new ErrorResponse(401, "Refresh token failed", result.Message ?? "Invalid refresh token"));
+            }
+            return Ok(new SuccessResponse(200, result.Message ?? "Login successful", new
+            {
+                result.AccessToken,
+                result.RefreshToken
+            }));
+        }
+
+        [HttpPost]
+        [Route("logout")]
+        public async Task<IActionResult> LogoutAll()
+        {
+            var userId = Request.Headers["X-UserId"].FirstOrDefault();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new ErrorResponse(401, "User not authenticated", null));
+            }
+            var result = await _authService.LogoutAll(int.Parse(userId));
+            if (!result)
+            {
+                return StatusCode(500, new ErrorResponse(500, "Failed to log out users", null));
+            }
+            return Ok(new SuccessResponse(200, "Logged out successfully", null));
         }
     }
 }

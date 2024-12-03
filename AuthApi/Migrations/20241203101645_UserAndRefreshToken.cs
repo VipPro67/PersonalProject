@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AuthApi.Migrations
 {
     /// <inheritdoc />
-    public partial class AppUser : Migration
+    public partial class UserAndRefreshToken : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -30,10 +30,34 @@ namespace AuthApi.Migrations
                     table.PrimaryKey("PK_Users", x => x.UserId);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Token);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "Users",
                 columns: new[] { "UserId", "Address", "DateOfBirth", "Email", "FullName", "PasswordHash", "UserName" },
-                values: new object[] { 1, "123 Main St", new DateOnly(1990, 1, 1), "admin@localhost.com", "Admin User", "$2a$11$Hmfp445a6CGSPGtAvezDzOSmv439KyTcPM4e6FzPKGab6XnxE5sJ6", "admin" });
+                values: new object[] { 1, "123 Main St", new DateOnly(1990, 1, 1), "admin@localhost.com", "Admin User", "$2a$11$bkyJaUUWmVPs4xW0u7e/xOm7mZ5Tkv3OVY6DywN0Af93jf.6G5d2K", "admin" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
@@ -51,6 +75,9 @@ namespace AuthApi.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
+
             migrationBuilder.DropTable(
                 name: "Users");
         }

@@ -40,6 +40,8 @@ builder.Services.AddSwaggerGen(/* Swagger configuration */);
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
 builder.Services.AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters()
     .AddValidatorsFromAssemblyContaining<RegisterDtoValidator>()
@@ -70,7 +72,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAPIGateWay",
         builder => builder
-            .WithOrigins(Environment.GetEnvironmentVariable("APIGateWay")) 
+            .WithOrigins(Environment.GetEnvironmentVariable("APIGateWay"))
             .AllowAnyHeader()
             .WithMethods("POST"));
 });
@@ -95,6 +97,7 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 app.UseCors("AllowAPIGateWay");
 app.UseGlobalExceptionHandling();
+app.UseCustomMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

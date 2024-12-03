@@ -18,14 +18,20 @@ namespace AuthApi.Services
     {
         Task<AuthResult> Register(RegisterDto registerDto);
         Task<AuthResult> Login(LoginDto loginDto);
+        Task<AuthResult> RefreshToken(string refreshToken);
+
+        Task<bool> LogoutAll(int userId);
 
     }
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
-        public AuthService(IUserRepository userRepository)
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
+
+        public AuthService(IUserRepository userRepository, IRefreshTokenRepository refreshTokenRepository)
         {
             _userRepository = userRepository;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         public async Task<AuthResult> Register(RegisterDto registerDto)
@@ -52,10 +58,19 @@ namespace AuthApi.Services
                 result.Message = "User registered failed!";
                 return result;
             }
-            string token = GenerateToken(saveUser);
+            string accessToken = GenerateToken(saveUser);
+            var refreshToken = GenerateRefreshToken(saveUser);
+            if (!await _refreshTokenRepository.AddRefreshTokenAsync(refreshToken))
+            {
+                result.Success = false;
+                result.Message = "Failed to generate refresh token.";
+                return result;
+            }
+
             result.Success = true;
             result.Message = "User registered successfully!";
-            result.Token = token;
+            result.AccessToken = accessToken;
+            result.RefreshToken = refreshToken.Token;
             return result;
         }
         public async Task<AuthResult> Login(LoginDto loginDto)
@@ -65,8 +80,51 @@ namespace AuthApi.Services
             if (user == null || !PasswordHelper.VerifyPassword(loginDto.Password, user.PasswordHash))
             { result.Success = false; result.Message = "Invalid username or password."; return result; }
             string token = GenerateToken(user);
-            result.Success = true; result.Message = "Login successful!";
-            result.Token = token; return result;
+            var refreshToken = GenerateRefreshToken(user);
+            if (!await _refreshTokenRepository.AddRefreshTokenAsync(refreshToken))
+            {
+                result.Success = false;
+                result.Message = "Failed to generate refresh token.";
+                return result;
+            }
+            result.Success = true;
+            result.Message = "Login successful!";
+            result.AccessToken = token;
+            result.RefreshToken = refreshToken.Token;
+            return result;
+        }
+
+        public async Task<AuthResult> RefreshToken(string refreshToken)
+        {
+            var result = new AuthResult();
+            var storedRefreshToken = await _refreshTokenRepository.GetRefreshTokenAsync(refreshToken);
+
+            if (storedRefreshToken == null || storedRefreshToken.ExpiresAt < DateTime.UtcNow)
+            {
+                result.Success = false;
+                result.Message = "Invalid or expired refresh token.";
+                return result;
+            }
+
+            var user = await _userRepository.GetAppUserByIdAsync(storedRefreshToken.UserId);
+            if (user == null)
+            {
+                result.Success = false;
+                result.Message = "User not found.";
+                return result;
+            }
+
+            var newAccessToken = GenerateToken(user);
+            var newRefreshToken = GenerateRefreshToken(user);
+
+            await _refreshTokenRepository.RemoveRefreshTokenAsync(refreshToken);
+            await _refreshTokenRepository.AddRefreshTokenAsync(newRefreshToken);
+
+            result.Success = true;
+            result.Message = "Token refreshed successfully.";
+            result.AccessToken = newAccessToken;
+            result.RefreshToken = newRefreshToken.Token;
+            return result;
         }
 
         private string GenerateToken(AppUser appUser)
@@ -86,11 +144,27 @@ namespace AuthApi.Services
                 Expires = DateTime.UtcNow.AddHours(_TokenExpiryTimeInHour),
                 SigningCredentials = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256),
                 Subject = new ClaimsIdentity(claims),
-
             };
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+
+        private RefreshToken GenerateRefreshToken(AppUser user)
+        {
+            var DayExpire = Environment.GetEnvironmentVariable("JWTKeyRefreshTokenExpiryDay");
+            return new RefreshToken
+            {
+                Token = Guid.NewGuid().ToString(),
+                UserId = user.UserId,
+                User = user,
+                ExpiresAt = DateTime.UtcNow.AddDays(int.Parse(DayExpire)),
+            };
+        }
+
+        public Task<bool> LogoutAll(int userId)
+        {
+            return _refreshTokenRepository.RemoveAllRefreshTokensByUserIdAsync(userId);
         }
     }
 }
