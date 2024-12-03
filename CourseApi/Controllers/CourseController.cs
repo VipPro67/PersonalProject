@@ -5,6 +5,7 @@ using CourseApi.Helpers;
 using CourseApi.Models;
 using CourseApi.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -13,7 +14,9 @@ namespace CourseApi.Controllers
 {
     [Route("api/courses")]
     [ApiController]
-    [Authorize]
+    [EnableCors]
+
+    //[Authorize]
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
@@ -42,8 +45,6 @@ namespace CourseApi.Controllers
                     new ErrorResponse(404, "Course not found", null)
                 );
             }
-
-
             return Ok(new SuccessResponse(200, "Get course successfully", _mapper.Map<CourseDto>(course)));
         }
 
@@ -84,6 +85,7 @@ namespace CourseApi.Controllers
                     new ErrorResponse(404, "Course not found", null)
                 );
             }
+
             return Ok(new SuccessResponse(200, "Course deleted successfully", null));
         }
     }

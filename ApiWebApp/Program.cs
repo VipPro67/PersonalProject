@@ -40,12 +40,19 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Open", builder =>
         builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
+builder.Services.AddSwaggerForOcelot(builder.Configuration);
 var app = builder.Build();
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAuthHeaderMiddleware();
+app.MapControllers();
+app.UseSwaggerForOcelotUI(opt =>
+{
+    opt.PathToSwaggerGenerator = "/swagger/docs";
+});
 app.UseGlobalExceptionHandling();
 app.UseCustomMiddleware();
 app.UseOcelot().Wait();
-
 app.Run();

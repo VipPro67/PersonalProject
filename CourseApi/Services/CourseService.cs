@@ -43,7 +43,7 @@ public class CourseService : ICourseService
         var existingCourse = await _courseRepository.GetCourseByCourseIdAsync(course.CourseId);
         if (existingCourse!= null)
         {
-            Log.Information("Course with id: {Id} already exists", course.CourseId);
+            Log.Error("Course with id: {Id} already exists", course.CourseId);
             return null;
         }
         var createdCourse = await _courseRepository.CreateCourseAsync(course);
@@ -57,7 +57,7 @@ public class CourseService : ICourseService
         Log.Information("course",existingCourse);
         if (existingCourse == null)
         {
-            Log.Information("Course not found for id: {Id}", courseId);
+            Log.Error("Course not found for id: {Id}", courseId);
             return null;
         }
         _mapper.Map(updateCourseDto, existingCourse);
@@ -70,6 +70,7 @@ public class CourseService : ICourseService
         var course = await _courseRepository.GetCourseByCourseIdAsync(courseId);
         if (course == null)
         {
+            Log.Error("Course not found for id: {Id}", courseId);
             return false;
         }
         return await _courseRepository.DeleteCourseAsync(course);

@@ -5,7 +5,7 @@ namespace CourseApi.Helpers
 {
     public class DateOnlyJsonConverter : JsonConverter<DateOnly>
     {
-        private const string DateFormat = "yyyy-MM-dd";
+        private const string DateFormat = "dd-MM-yyyy";
 
         public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

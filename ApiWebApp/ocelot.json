@@ -15,7 +15,8 @@
                 "POST",
                 "PUT",
                 "DELETE"
-            ]
+            ],
+            "SwaggerKey": "auth"
         },
         {
             "UpstreamPathTemplate": "/api/courses/{everything}",
@@ -36,7 +37,8 @@
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
                 "AllowedScopes": []
-            }
+            },
+            "SwaggerKey": "courses"
         },
         {
             "UpstreamPathTemplate": "/api/students/{everything}",
@@ -57,7 +59,40 @@
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
                 "AllowedScopes": []
-            }
+            },
+            "SwaggerKey": "students"
+        }
+    ],
+    "SwaggerEndPoints": [
+        {
+            "Key": "auth",
+            "Config": [
+                {
+                    "Name": "Auth API",
+                    "Version": "v1",
+                    "Url": "https://localhost:5005/swagger/v1/swagger.json"
+                }
+            ]
+        },
+        {
+            "Key": "courses",
+            "Config": [
+                {
+                    "Name": "Courses API",
+                    "Version": "v1",
+                    "Url": "https://localhost:5001/swagger/v1/swagger.json"
+                }
+            ]
+        },
+        {
+            "Key": "students",
+            "Config": [
+                {
+                    "Name": "Students API",
+                    "Version": "v1",
+                    "Url": "https://localhost:5002/swagger/v1/swagger.json"
+                }
+            ]
         }
     ],
     "GlobalConfiguration": {

@@ -9,7 +9,7 @@ namespace StudentApi.Controllers
 {
     [Route("api/students")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class StudentController : ControllerBase
     {
         private readonly IStudentService _studentService;
@@ -93,6 +93,5 @@ namespace StudentApi.Controllers
             }
             return Ok(new SuccessResponse(200, "Delete student successfully", null));
         }
-
     }
 }

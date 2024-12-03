@@ -5,6 +5,7 @@ using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using StudentApi.Data;
 using StudentApi.DTOs;
@@ -18,7 +19,34 @@ using System.Text.Json.Serialization;
 
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(option =>
+{
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Student API", Version = "v1" });
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+});
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING")));
@@ -40,13 +68,12 @@ builder.Services.AddControllers(option =>
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 builder.Services.AddAutoMapper(typeof(StudentMappingProfile));
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
 var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");
 var authSigningKey = Environment.GetEnvironmentVariable("JWTKeySecret");
-
+/*
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -65,13 +92,15 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(authSigningKey))
     };
 });
+*/
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowCors",
         builder => builder
             .WithOrigins(Environment.GetEnvironmentVariable("CORS_ORIGINS").Split(','))
+            .AllowAnyMethod()
             .AllowAnyHeader()
-            .WithMethods("GET", "POST", "PUT", "DELETE"));
+            .WithExposedHeaders("X-UserId", "X-UserName", "X-Email"));
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -91,7 +120,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 app.MapControllers();
-app.UseAuthentication();
-app.UseAuthorization();
+//app.UseAuthentication();
+//app.UseAuthorization();
 app.Run();
 

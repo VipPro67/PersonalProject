@@ -70,7 +70,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAPIGateWay",
         builder => builder
-            .WithOrigins(Environment.GetEnvironmentVariable("APIGateWay")) // Replace with your allowed origins
+            .WithOrigins(Environment.GetEnvironmentVariable("APIGateWay")) 
             .AllowAnyHeader()
             .WithMethods("POST"));
 });
