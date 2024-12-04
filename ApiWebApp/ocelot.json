@@ -41,6 +41,28 @@
             "SwaggerKey": "courses"
         },
         {
+            "UpstreamPathTemplate": "/api/enrollments/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+            ],
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5001
+                }
+            ],
+            "DownstreamPathTemplate": "/api/enrollments/{everything}",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            },
+            "SwaggerKey": "courses"
+        },
+        {
             "UpstreamPathTemplate": "/api/students/{everything}",
             "UpstreamHttpMethod": [
                 "GET",
@@ -79,6 +101,16 @@
             "Config": [
                 {
                     "Name": "Courses API",
+                    "Version": "v1",
+                    "Url": "https://localhost:5001/swagger/v1/swagger.json"
+                }
+            ]
+        },
+        {
+            "Key": "enrollments",
+            "Config": [
+                {
+                    "Name": "Enrollments API",
                     "Version": "v1",
                     "Url": "https://localhost:5001/swagger/v1/swagger.json"
                 }
