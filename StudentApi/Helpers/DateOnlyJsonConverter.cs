@@ -1,20 +1,18 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
+using Newtonsoft.Json;
 namespace StudentApi.Helpers
 {
     public class DateOnlyJsonConverter : JsonConverter<DateOnly>
     {
         private const string DateFormat = "dd-MM-yyyy";
 
-        public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override DateOnly ReadJson(JsonReader reader, Type objectType, DateOnly existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            return DateOnly.ParseExact(reader.GetString()!, DateFormat);
+            return DateOnly.ParseExact(reader.Value.ToString(), DateFormat, null);
         }
 
-        public override void Write(Utf8JsonWriter writer, DateOnly value, JsonSerializerOptions options)
+        public override void WriteJson(JsonWriter writer, DateOnly value, JsonSerializer serializer)
         {
-            writer.WriteStringValue(value.ToString(DateFormat));
+            writer.WriteValue(value.ToString(DateFormat));
         }
     }
 }

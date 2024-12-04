@@ -8,6 +8,7 @@ namespace StudentApi.Services;
 public interface IStudentService
 {
     Task<Student?> GetStudentByIdAsync(int id);
+    Task<List<Student>?> GetStudentsByIdsAsync(List<int> ids);
     Task<Student?> GetStudentByEmailAsync(string email);
     Task<Student?> CreateStudentAsync(CreateStudentDto student);
     Task<List<Student>> GetStudentsAsync();
@@ -60,6 +61,12 @@ public class StudentService : IStudentService
     {
         return _studentRepository.GetAllStudentsAsync();
     }
+
+    public async Task<List<Student>?> GetStudentsByIdsAsync(List<int> ids)
+    {
+        return await _studentRepository.GetStudentsByIdsAsync(ids);
+    }
+
     public async Task<Student?> UpdateStudentAsync(int id, UpdateStudentDto updatedStudentDto)
     {
         if (id != updatedStudentDto.StudentId)

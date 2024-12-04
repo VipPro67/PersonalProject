@@ -41,6 +41,19 @@ namespace StudentApi.Controllers
             return Ok(new SuccessResponse(200, "Get student successfully", _mapper.Map<StudentDto>(student)));
         }
 
+        [HttpGet("ids")]
+        public async Task<IActionResult> GetStudentsByIdsAsync([FromQuery] List<int> ids)
+        {
+            var students = await _studentService.GetStudentsByIdsAsync(ids);
+            if (students == null)
+            {
+                return NotFound(
+                    new ErrorResponse(404, "Students not found", null)
+                );
+            }
+            return Ok(new SuccessResponse(200, "Get list students successfully", _mapper.Map<List<StudentDto>>(students)));
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddStudentAsync([FromBody] CreateStudentDto createStudentDto)
         {
