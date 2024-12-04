@@ -47,7 +47,7 @@ public class EnrollmentRepository : IEnrollmentRepository
 
     public async Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync(string courseId)
     {
-        return await _context.Enrollments.Where(e => e.CourseId == courseId).Include(e => e.Course).ToListAsync();
+        return await _context.Enrollments.Where(e => e.CourseId == courseId).ToListAsync();
     }
 
     public async Task<List<Enrollment>?> GetEnrollmentsByStudentIdAsync(int courseId)

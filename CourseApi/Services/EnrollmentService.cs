@@ -33,24 +33,13 @@ public class EnrollmentService : IEnrollmentService
     public async Task<List<Enrollment>?> GetAllEnrollmentsAsync()
     {
         var enrollments = await _enrollmentRepository.GetAllEnrollmentsAsync();
-        if (enrollments == null)
+        if (enrollments == null || enrollments.Count == 0)
         {
             return null;
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
         var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
         var ids = enrollments.Select(x => x.StudentId).ToList();
-        /* public async Task<IActionResult> GetStudentsByIdsAsync([FromQuery] List<int> ids)
-         {
-             var students = await _studentService.GetStudentsByIdsAsync(ids);
-             if (students == null)
-             {
-                 return NotFound(
-                     new ErrorResponse(404, "Students not found", null)
-                 );
-             }
-             return Ok(new SuccessResponse(200, "Get list students successfully", _mapper.Map<List<StudentDto>>(students)));
-         }*/
         try
         {
             var response = await studentApiClient.GetAsync($"api/students/ids?ids={string.Join("&ids=", ids)}");
@@ -109,17 +98,32 @@ public class EnrollmentService : IEnrollmentService
     public async Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync(string courseId)
     {
         var enrollments = await _enrollmentRepository.GetEnrollmentsByCourseIdAsync(courseId);
-        if (enrollments == null)
+        if (enrollments == null || enrollments.Count == 0)
         {
             return null;
         }
+        var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
+        var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+        var ids = enrollments.Select(x => x.StudentId).ToList();
+
         try
         {
-            var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-            var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
-            var ids = enrollments.Select(x => x.StudentId).ToList();
             var response = await studentApiClient.GetAsync($"api/students/ids?ids={string.Join("&ids=", ids)}");
             var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent);
+                if (apiResponse?.Data != null)
+                {
+                    enrollments.ForEach(e => e.Student = apiResponse.Data.FirstOrDefault(s => s.StudentId == e.StudentId));
+                }
+            }
+            else
+            {
+                Log.Error($"Failed to retrieve students from StudentApi: {response.StatusCode}");
+            }
+
         }
         catch (Exception e)
         {
@@ -130,7 +134,7 @@ public class EnrollmentService : IEnrollmentService
     public async Task<List<Enrollment>?> GetEnrollmentsByStudentIdAsync(int studentId)
     {
         var enrollments = await _enrollmentRepository.GetEnrollmentsByStudentIdAsync(studentId);
-        if (enrollments == null)
+        if (enrollments == null || enrollments.Count == 0)
         {
             return null;
         }
