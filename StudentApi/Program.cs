@@ -46,7 +46,7 @@ builder.Services.AddSwaggerGen(option =>
 });
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionString")));
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 
@@ -95,7 +95,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowCors",
         builder => builder
-            .WithOrigins(Environment.GetEnvironmentVariable("CORS_ORIGINS").Split(','))
+            .WithOrigins(Environment.GetEnvironmentVariable("CorsOrigins").Split(','))
             .AllowAnyMethod()
             .AllowAnyHeader()
             .WithExposedHeaders("X-UserId", "X-UserName", "X-Email"));
