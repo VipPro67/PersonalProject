@@ -4,12 +4,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CourseApi.Repositories;
 
-public interface IEnrollmentRepository 
+public interface IEnrollmentRepository
 {
     Task<List<Enrollment>?> GetAllEnrollmentsAsync();
     Task<Enrollment?> GetEnrollmentByIdAsync(int enrollmentId);
 
-    Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync( string courseId);
+    Task<bool> IsStudentEnrolledInCourseAsync(int enrollmentId, string courseId);
+
+    Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync(string courseId);
 
     Task<List<Enrollment>?> GetEnrollmentsByStudentIdAsync(int studentId);
 
@@ -40,21 +42,26 @@ public class EnrollmentRepository : IEnrollmentRepository
 
     public async Task<List<Enrollment>?> GetAllEnrollmentsAsync()
     {
-        return await _context.Enrollments.ToListAsync();
+        return await _context.Enrollments.Include(e => e.Course).ToListAsync();
     }
 
     public async Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync(string courseId)
     {
-        return await _context.Enrollments.Where(e => e.CourseId == courseId).ToListAsync();
+        return await _context.Enrollments.Where(e => e.CourseId == courseId).Include(e => e.Course).ToListAsync();
     }
 
     public async Task<List<Enrollment>?> GetEnrollmentsByStudentIdAsync(int courseId)
     {
-        return await _context.Enrollments.Where(e => e.StudentId == courseId).ToListAsync();
+        return await _context.Enrollments.Where(e => e.StudentId == courseId).Include(e => e.Course).ToListAsync();
     }
 
     public async Task<Enrollment?> GetEnrollmentByIdAsync(int enrollmentId)
     {
-        return await _context.Enrollments.FirstOrDefaultAsync(e=>e.EnrollmentId==enrollmentId);
+        return await _context.Enrollments.Include(e => e.Course).FirstOrDefaultAsync(e => e.EnrollmentId == enrollmentId);
+    }
+
+    public Task<bool> IsStudentEnrolledInCourseAsync(int enrollmentId, string courseId)
+    {
+        return _context.Enrollments.AnyAsync(e => e.EnrollmentId == enrollmentId && e.CourseId == courseId);
     }
 }

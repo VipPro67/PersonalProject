@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CourseApi.Controllers;
 [Route("api/enrollments")]
 [ApiController]
-[Authorize]
+//[Authorize]
 public class EnrollmentController : ControllerBase
 {
     private readonly IEnrollmentService _enrollmentService;
@@ -77,7 +77,7 @@ public class EnrollmentController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEnrollmentAsync(int id)
     {
-        var deletedEnrollment = await _enrollmentService.DropStudentFromCourseAsync(id);
+        var deletedEnrollment = await _enrollmentService.DeleteEnrollmentAsync(id);
         if (deletedEnrollment == false)
         {
             return NotFound(new ErrorResponse(404, "Enrollment not found", null));

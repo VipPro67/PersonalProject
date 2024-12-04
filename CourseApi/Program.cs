@@ -1,5 +1,4 @@
-using System.Text.Json.Serialization;
-using CourseApi;
+using AutoMapper;
 using CourseApi.Data;
 using CourseApi.DTOs;
 using CourseApi.Filters;
@@ -11,11 +10,12 @@ using CourseApi.Services;
 using DotNetEnv;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Serilog;
+
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
@@ -48,7 +48,8 @@ builder.Services.AddSwaggerGen(option =>
 });
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionString")));
+builder.Services.AddAutoMapper(typeof(CourseMappingProfile));
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
@@ -66,12 +67,11 @@ builder.Services.AddControllers(option =>
         option.Filters.Add(typeof(ValidateModelStateFilter));
     })
     .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true)
-    .AddJsonOptions(options =>
+    .AddNewtonsoftJson(options =>
     {
-        options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+        options.SerializerSettings.Converters.Add(new IsoDateTimeConverter { DateTimeFormat = "dd-MM-yyyy" });
+        options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
     });
-builder.Services.AddAutoMapper(typeof(CourseMappingProfile));
-var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
 var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");
 var authSigningKey = Environment.GetEnvironmentVariable("JWTKeySecret");
 
@@ -99,7 +99,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowCors",
         builder => builder
-            .WithOrigins(Environment.GetEnvironmentVariable("CORS_ORIGINS").Split(','))
+            .WithOrigins(Environment.GetEnvironmentVariable("CorsOrigins").Split(','))
             .AllowAnyMethod()
             .AllowAnyHeader()
             .WithExposedHeaders("X-UserId", "X-UserName", "X-Email"));
