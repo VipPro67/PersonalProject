@@ -1,4 +1,3 @@
-using AutoMapper;
 using CourseApi.Data;
 using CourseApi.DTOs;
 using CourseApi.Filters;
@@ -12,7 +11,6 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Serilog;
 
@@ -58,7 +56,9 @@ builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters()
     .AddValidatorsFromAssemblyContaining<CreateCourseDto>()
-    .AddValidatorsFromAssemblyContaining<UpdateCourseDto>();
+    .AddValidatorsFromAssemblyContaining<UpdateCourseDto>()
+    .AddValidatorsFromAssemblyContaining<CreateEnrollmentDto>();
+
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -72,10 +72,12 @@ builder.Services.AddControllers(option =>
         options.SerializerSettings.Converters.Add(new IsoDateTimeConverter { DateTimeFormat = "dd-MM-yyyy" });
         options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
     });
+/*
+var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
 var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");
 var authSigningKey = Environment.GetEnvironmentVariable("JWTKeySecret");
 
-/*
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -104,6 +106,7 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .WithExposedHeaders("X-UserId", "X-UserName", "X-Email"));
 });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -111,6 +114,7 @@ var app = builder.Build();
 
 app.UseRouting();
 app.UseCors("AllowCors");
+app.UseUserInfoLogging();
 app.UseGlobalExceptionHandling();
 app.UseSerilogRequestLogging();
 // Configure the HTTP request pipeline.

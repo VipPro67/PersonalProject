@@ -1,7 +1,5 @@
-namespace AuthApi.DTOs
+namespace AuthApi.DTOs;
+public class RefreshTokenDto
 {
-    public class RefreshTokenDto
-    {
-        public string RefreshToken { get; set; }
-    }
+    public string RefreshToken { get; set; }
 }

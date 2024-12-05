@@ -44,7 +44,9 @@ namespace CourseApi.Controllers
             var course = await _courseService.GetCourseByCourseIdAsync(id);
             if (course == null)
             {
+                Log.Error("Course not found for id: {Id}", id);
                 return NotFound(
+
                     new ErrorResponse(404, "Course not found", null)
                 );
             }

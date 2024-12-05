@@ -17,7 +17,7 @@ public class AuthHeaderMiddleware
             var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userName = context.User.FindFirstValue(ClaimTypes.Name);
             var email = context.User.FindFirstValue(ClaimTypes.Email);
-
+            Console.WriteLine($"User authenticated: UserId: {userId}, UserName: {userName}, Email: {email}");
             context.Request.Headers.Add("X-UserId", userId);
             context.Request.Headers.Add("X-UserName", userName);
             context.Request.Headers.Add("X-Email", email);

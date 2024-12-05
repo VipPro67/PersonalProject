@@ -1,48 +1,48 @@
 ﻿using CourseApi.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace CourseApi.Data
+namespace CourseApi.Data;
+
+public class ApplicationDbContext : DbContext
 {
-    public class ApplicationDbContext : DbContext
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
+    }
+
+    public DbSet<Course> Courses { get; set; }
+    public DbSet<Enrollment> Enrollments { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<Course>(cs =>
         {
-        }
+            cs.HasKey(c => c.CourseId);
+            cs.Property(c => c.CourseId).IsRequired().HasMaxLength(10);
+            cs.Property(c => c.CourseName).IsRequired().HasColumnType("varchar(100)");
+            cs.Property(c => c.Description).IsRequired().HasColumnType("varchar(500)");
+            cs.Property(c => c.Credit).IsRequired();
+            cs.Property(c => c.Instructor).IsRequired().HasColumnType("varchar(100)");
+            cs.Property(c => c.Department).IsRequired().HasColumnType("varchar(100)");
+            cs.Property(c => c.StartDate).IsRequired().HasColumnType("date");
+            cs.Property(c => c.EndDate).IsRequired().HasColumnType("date");
+            cs.Property(c => c.Schedule).IsRequired().HasMaxLength(100);
+            cs.HasMany(c => c.Enrollments).WithOne(e => e.Course).HasForeignKey(e => e.CourseId).IsRequired();
+        });
 
-        public DbSet<Course> Courses { get; set; }
-        public DbSet<Enrollment> Enrollments { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        modelBuilder.Entity<Enrollment>(e =>
         {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Course>(cs =>
-            {
-                cs.HasKey(c => c.CourseId);
-                cs.Property(c => c.CourseId).IsRequired().HasMaxLength(10);
-                cs.Property(c => c.CourseName).IsRequired().HasColumnType("varchar(100)");
-                cs.Property(c => c.Description).IsRequired().HasColumnType("varchar(500)");
-                cs.Property(c => c.Credit).IsRequired();
-                cs.Property(c => c.Instructor).IsRequired().HasColumnType("varchar(100)");
-                cs.Property(c => c.Department).IsRequired().HasColumnType("varchar(100)");
-                cs.Property(c => c.StartDate).IsRequired().HasColumnType("date");
-                cs.Property(c => c.EndDate).IsRequired().HasColumnType("date");
-                cs.Property(c => c.Schedule).IsRequired().HasMaxLength(100);
-                cs.HasMany(c => c.Enrollments).WithOne(e => e.Course).HasForeignKey(e => e.CourseId).IsRequired();
-            });
+            e.HasKey(e => e.EnrollmentId);
+            e.Property(e => e.StudentId).IsRequired();
+            e.HasOne(e => e.Course).WithMany(c => c.Enrollments)
+            .HasForeignKey(e => e.CourseId).HasConstraintName("FK_Enrollment_Course");
+            e.Ignore(e => e.Student);
+            e.HasIndex(e => new { e.StudentId, e.CourseId }).IsUnique();
 
-            modelBuilder.Entity<Enrollment>(e =>
-            {
-                e.HasKey(e => e.EnrollmentId);
-                e.Property(e => e.StudentId).IsRequired();
-                e.HasOne(e => e.Course).WithMany(c => c.Enrollments)
-                .HasForeignKey(e => e.CourseId).HasConstraintName("FK_Enrollment_Course");
-                e.Ignore(e => e.Student);
-                e.HasIndex(e => new { e.StudentId, e.CourseId }).IsUnique();
+        });
 
-            });
-
-            var courses = new List<Course>()
+        var courses = new List<Course>()
             {
                 new Course
                 {
@@ -81,8 +81,8 @@ namespace CourseApi.Data
                     Schedule = "2:00 PM - 5:00 PM Thu"
                 }
             };
-            modelBuilder.Entity<Course>().HasData(courses);
-            var enrollments = new List<Enrollment>()
+        modelBuilder.Entity<Course>().HasData(courses);
+        var enrollments = new List<Enrollment>()
             {
                 new Enrollment { EnrollmentId = 1, CourseId = "C001", StudentId = 1 },
                 new Enrollment { EnrollmentId = 2, CourseId = "OOP", StudentId = 1 },
@@ -91,7 +91,7 @@ namespace CourseApi.Data
                 new Enrollment { EnrollmentId = 5, CourseId = "OOP", StudentId = 2 },
                 new Enrollment { EnrollmentId = 6, CourseId = "IT007", StudentId = 2 }
             };
-            modelBuilder.Entity<Enrollment>().HasData(enrollments);
-        }
+        modelBuilder.Entity<Enrollment>().HasData(enrollments);
     }
 }
+

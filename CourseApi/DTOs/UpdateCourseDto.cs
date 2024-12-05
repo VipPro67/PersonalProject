@@ -10,9 +10,9 @@ public class UpdateCourseDto
 
     public string? Department { get; set; }
 
-    public DateOnly? StartDate { get; set; }
+    public DateOnly StartDate { get; set; }
 
-    public DateOnly? EndDate { get; set; }
+    public DateOnly EndDate { get; set; }
 
     public string? Schedule { get; set; }
 

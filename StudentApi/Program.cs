@@ -68,10 +68,11 @@ builder.Services.AddControllers(option =>
         options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
     }); ;
 builder.Services.AddAutoMapper(typeof(StudentMappingProfile));
+/*
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
 var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");
 var authSigningKey = Environment.GetEnvironmentVariable("JWTKeySecret");
-/*
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -107,8 +108,8 @@ var app = builder.Build();
 
 app.UseRouting();
 app.UseCors("AllowCors");
+app.UseUserInfoLogging();
 app.UseGlobalExceptionHandling();
-
 app.UseSerilogRequestLogging();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

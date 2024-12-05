@@ -12,8 +12,8 @@ public class CourseDto
 
     public string? Department { get; set; }
 
-    public string? StartDate { get; set; }
+    public DateOnly StartDate { get; set; }
 
-    public string? EndDate { get; set;}
+    public DateOnly EndDate { get; set; }
     public string? Schedule { get; set; }
 }
