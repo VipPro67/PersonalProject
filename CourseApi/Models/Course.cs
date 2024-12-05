@@ -14,5 +14,5 @@ public class Course
     public DateOnly? EndDate { get; set; }
     public string? Schedule { get; set; }
 
-    public List<Enrollment>? Enrollments { get; set; }
+    public List<Enrollment>? Enrollments { get; set; } = new List<Enrollment>();
 }

@@ -8,23 +8,22 @@ namespace CourseApi.Mappings
     {
         public CourseMappingProfile()
         {
-            // Map from CreateCourseDto to Course
             CreateMap<CreateCourseDto, Course>();
+            CreateMap<Course, CourseDto>();
+            CreateMap<UpdateCourseDto, Course>();
+            CreateMap<Course, CourseDto>();
 
-            // Map from UpdateCourseDto to Course
-            CreateMap<UpdateCourseDto, Course>()
-                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
-
-            // Map from Course to CourseDto
-            CreateMap<Course, CourseDto>()
-                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate.HasValue ? src.StartDate.Value.ToString("yyyy-MM-dd") : null))
-                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.EndDate.HasValue ? src.EndDate.Value.ToString("yyyy-MM-dd") : null));
-
-            // Map for Enrollment to EnrollmentDto
-            CreateMap<Enrollment, EnrollmentDto>();
-
-            // Map for EnrollmentDto to Enrollment
+            CreateMap<Enrollment, EnrollmentDto>()
+                .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.CourseName))
+                .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src => src.Student.FullName));
+            CreateMap<Enrollment, EnrollmentDetailDto>()
+                .ForMember(dest => dest.Course, opt => opt.MapFrom(src => src.Course))
+                .ForMember(dest => dest.Student, opt => opt.MapFrom(src => src.Student));
             CreateMap<CreateEnrollmentDto, Enrollment>();
+            CreateMap<Course, CourseDto>();
+            CreateMap<Student, StudentDto>();
         }
+
     }
+
 }

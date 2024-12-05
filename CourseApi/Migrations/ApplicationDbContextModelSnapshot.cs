@@ -124,6 +124,9 @@ namespace CourseApi.Migrations
 
                     b.HasIndex("CourseId");
 
+                    b.HasIndex("StudentId", "CourseId")
+                        .IsUnique();
+
                     b.ToTable("Enrollments");
 
                     b.HasData(

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CourseApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241203035648_CourseAndEnrollment")]
+    [Migration("20241204084832_CourseAndEnrollment")]
     partial class CourseAndEnrollment
     {
         /// <inheritdoc />
@@ -126,6 +126,9 @@ namespace CourseApi.Migrations
                     b.HasKey("EnrollmentId");
 
                     b.HasIndex("CourseId");
+
+                    b.HasIndex("StudentId", "CourseId")
+                        .IsUnique();
 
                     b.ToTable("Enrollments");
 

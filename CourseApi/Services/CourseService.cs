@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using CourseApi.DTOs;
+using CourseApi.Helpers;
 using CourseApi.Models;
 using CourseApi.Repositories;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace CourseApi.Services;
@@ -12,16 +14,21 @@ public interface ICourseService
     Task<Course?> CreateCourseAsync(CreateCourseDto createCourseDto);
     Task<Course?> UpdateCourseAsync(string courseId, UpdateCourseDto updateCourseDto);
 
+    Task<List<Student>?> GetStudentsByCourseIdAsync(string courseId);
+
     Task<bool> DeleteCourseAsync(string courseId);
 }
 public class CourseService : ICourseService
 {
     private readonly ICourseRepository _courseRepository;
+
+    private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IMapper _mapper;
 
-    public CourseService(ICourseRepository courseRepository, IMapper mapper)
+    public CourseService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository, IMapper mapper)
     {
         _courseRepository = courseRepository;
+        _enrollmentRepository = enrollmentRepository;
         _mapper = mapper;
     }
 
@@ -41,7 +48,7 @@ public class CourseService : ICourseService
     {
         var course = _mapper.Map<Course>(createCourseDto);
         var existingCourse = await _courseRepository.GetCourseByCourseIdAsync(course.CourseId);
-        if (existingCourse!= null)
+        if (existingCourse != null)
         {
             Log.Error("Course with id: {Id} already exists", course.CourseId);
             return null;
@@ -54,7 +61,7 @@ public class CourseService : ICourseService
     {
         var existingCourse = await _courseRepository.GetCourseByCourseIdAsync(courseId);
         Log.Information("Updating course with id: {Id}", courseId);
-        Log.Information("course",existingCourse);
+        Log.Information("course", existingCourse);
         if (existingCourse == null)
         {
             Log.Error("Course not found for id: {Id}", courseId);
@@ -74,5 +81,38 @@ public class CourseService : ICourseService
             return false;
         }
         return await _courseRepository.DeleteCourseAsync(course);
+    }
+
+    public async Task<List<Student>?> GetStudentsByCourseIdAsync(string courseId)
+    {
+        var enrollments = await _enrollmentRepository.GetEnrollmentsByCourseIdAsync(courseId);
+        if (enrollments == null || enrollments.Count == 0)
+            return null;
+        var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
+        var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+        var ids = enrollments.Select(x => x.StudentId).ToList();
+
+        try
+        {
+            var response = await studentApiClient.GetAsync($"api/students/ids?ids={string.Join("&ids=", ids)}");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent);
+                return apiResponse.Data;
+            }
+            else
+            {
+                Log.Error($"Failed to retrieve students from StudentApi: {response.StatusCode}");
+                return null;
+            }
+
+        }
+        catch (Exception e)
+        {
+            Log.Error($"Error retrieving students from StudentApi: {e.Message}");
+            return null;
+        }
     }
 }

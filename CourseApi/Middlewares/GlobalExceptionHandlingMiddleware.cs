@@ -1,5 +1,5 @@
 using System.Net;
-using System.Text.Json;
+using Newtonsoft.Json;
 using CourseApi.Helpers;
 
 namespace CourseApi.Middlewares
@@ -39,7 +39,7 @@ namespace CourseApi.Middlewares
                 exception.Message
             );
 
-            var result = JsonSerializer.Serialize(response);
+            var result = JsonConvert.SerializeObject(response);
             return context.Response.WriteAsync(result);
         }
     }

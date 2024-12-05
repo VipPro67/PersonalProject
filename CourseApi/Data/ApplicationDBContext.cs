@@ -33,9 +33,13 @@ namespace CourseApi.Data
 
             modelBuilder.Entity<Enrollment>(e =>
             {
+                e.HasKey(e => e.EnrollmentId);
+                e.Property(e => e.StudentId).IsRequired();
                 e.HasOne(e => e.Course).WithMany(c => c.Enrollments)
                 .HasForeignKey(e => e.CourseId).HasConstraintName("FK_Enrollment_Course");
-                e.Property(e => e.StudentId).IsRequired();
+                e.Ignore(e => e.Student);
+                e.HasIndex(e => new { e.StudentId, e.CourseId }).IsUnique();
+
             });
 
             var courses = new List<Course>()

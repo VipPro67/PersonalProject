@@ -30,6 +30,9 @@ namespace CourseApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllCoursesAsync()
         {
+            Log.Information($"Request from user: userId: {Request.Headers["X-UserId"]}, userName: {Request.Headers["X-UserName"]}, Email: {Request.Headers["X-Email"]}");
+
+
             var courses = await _courseService.GetCoursesAsync();
 
             return Ok(new SuccessResponse(200, "Get list courses successfully", _mapper.Map<List<CourseDto>>(courses)));
@@ -48,6 +51,20 @@ namespace CourseApi.Controllers
             return Ok(new SuccessResponse(200, "Get course successfully", _mapper.Map<CourseDto>(course)));
         }
 
+        [HttpGet("{id}/students")]
+        public async Task<IActionResult> GetStudentsInCourseAsync(string id)
+        {
+            var students = await _courseService.GetStudentsByCourseIdAsync(id);
+            if (students == null || !students.Any())
+            {
+                return NotFound(
+                    new ErrorResponse(404, "No students found for this course", null)
+                );
+            }
+            return Ok(new SuccessResponse(200, "Get students in course successfully", _mapper.Map<List<StudentDto>>(students)));
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> AddCourseAsync([FromBody] CreateCourseDto course)
         {
@@ -58,7 +75,7 @@ namespace CourseApi.Controllers
                     new ErrorResponse(500, "Failed to create course", null)
                 );
             }
-            return Ok(new SuccessResponse(200, "Get course successfully", _mapper.Map<CourseDto>(result)));
+            return Ok(new SuccessResponse(200, "Create course successfully", _mapper.Map<CourseDto>(result)));
         }
 
         [HttpPut("{id}")]
