@@ -38,10 +38,7 @@ namespace StudentApi.Middlewares
                 var response = new ErrorResponse(415, "Unsupported Media Type", null);
                 await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
             }
-            
-
         }
-
     }
     public static class CustomMiddlewareExtensions
     {
