@@ -19,7 +19,6 @@ namespace AuthApi.Services
         Task<AuthResult> Register(RegisterDto registerDto);
         Task<AuthResult> Login(LoginDto loginDto);
         Task<AuthResult> RefreshToken(string refreshToken);
-
         Task<bool> LogoutAll(int userId);
 
     }
