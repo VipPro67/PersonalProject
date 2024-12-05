@@ -8,4 +8,5 @@ public class AppUser
     public string? FullName { get; set; }
     public string? Address { get; set; }
     public DateOnly? DateOfBirth { get; set; }
+    public List<RefreshToken>? RefreshTokens { get; set; }  = new List<RefreshToken>();
 }

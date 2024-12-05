@@ -70,9 +70,43 @@ namespace AuthApi.Migrations
                             DateOfBirth = new DateOnly(1990, 1, 1),
                             Email = "admin@localhost.com",
                             FullName = "Admin User",
-                            PasswordHash = "$2a$11$Hmfp445a6CGSPGtAvezDzOSmv439KyTcPM4e6FzPKGab6XnxE5sJ6",
+                            PasswordHash = "$2a$11$bkyJaUUWmVPs4xW0u7e/xOm7mZ5Tkv3OVY6DywN0Af93jf.6G5d2K",
                             UserName = "admin"
                         });
+                });
+
+            modelBuilder.Entity("RefreshToken", b =>
+                {
+                    b.Property<string>("Token")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Token");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
+            modelBuilder.Entity("RefreshToken", b =>
+                {
+                    b.HasOne("AuthApi.Models.AppUser", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AuthApi.Models.AppUser", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }
