@@ -21,8 +21,8 @@ public class AuthHeaderMiddleware
             context.Request.Headers.Add("X-UserId", userId);
             context.Request.Headers.Add("X-UserName", userName);
             context.Request.Headers.Add("X-Email", email);
-            context.User = new ClaimsPrincipal();
-            context.Request.Headers.Remove("Authorization");
+            //context.User = new ClaimsPrincipal();
+            //context.Request.Headers.Remove("Authorization");
         }
         await _next(context);
     }
