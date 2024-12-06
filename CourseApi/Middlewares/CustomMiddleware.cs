@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using CourseApi.Helpers;
+using Microsoft.AspNetCore.WebUtilities;
 namespace CourseApi.Middlewares;
 public class CustomMiddleware
 {
@@ -13,33 +14,14 @@ public class CustomMiddleware
     public async Task Invoke(HttpContext context)
     {
         await _next(context);
-        if (context.Response.StatusCode == 401)
+        var statusCode = context.Response.StatusCode;
+        if (statusCode >= 400 && statusCode < 500)
         {
             context.Response.ContentType = "application/json";
-            var response = new ErrorResponse(401, "Unauthorized: Authentication is required to access this resource", null);
+            var response = new ErrorResponse(statusCode, ReasonPhrases.GetReasonPhrase(statusCode), null);
             await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
         }
-        else if (context.Response.StatusCode == 403)
-        {
-            context.Response.ContentType = "application/json";
-            var response = new ErrorResponse(403, "Forbidden: You do not have permission to access this resource", null);
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
-        }
-        else if (context.Response.StatusCode == 405)
-        {
-            context.Response.ContentType = "application/json";
-            var response = new ErrorResponse(405, "Not allowed: This method not allowed", null);
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
-        }
-        else if (context.Response.StatusCode == 415)
-        {
-            context.Response.ContentType = "application/json";
-            var response = new ErrorResponse(415, "Unsupported Media Type", null);
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
-        }
-
     }
-
 }
 public static class CustomMiddlewareExtensions
 {

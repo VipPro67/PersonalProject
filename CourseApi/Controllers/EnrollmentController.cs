@@ -39,26 +39,18 @@ public class EnrollmentController : ControllerBase
     }
 
     [HttpGet]
-    [Route("course/{courseId}")]
+    [Route("courses/{courseId}")]
     public async Task<IActionResult> GetEnrollmentsByCourseIdAsync(string courseId)
     {
         var enrollments = await _enrollmentService.GetEnrollmentsByCourseIdAsync(courseId);
-        if (enrollments == null)
-        {
-            return NotFound(new ErrorResponse(404, "Course not found", null));
-        }
         return Ok(new SuccessResponse(200, "Get enrollments successfully", _mapper.Map<List<EnrollmentDto>>(enrollments)));
     }
 
     [HttpGet]
-    [Route("student/{studentId}")]
+    [Route("students/{studentId}")]
     public async Task<IActionResult> GetEnrollmentsByStudentIdAsync(int studentId)
     {
         var enrollments = await _enrollmentService.GetEnrollmentsByStudentIdAsync(studentId);
-        if (enrollments == null)
-        {
-            return NotFound(new ErrorResponse(404, "Student not found", null));
-        }
         return Ok(new SuccessResponse(200, "Get enrollments successfully", _mapper.Map<List<EnrollmentDto>>(enrollments)));
     }
 
