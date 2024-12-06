@@ -12,9 +12,13 @@ namespace AuthApi.Helpers
             _localization = localization;
         }
 
-        public string GetLocalizedMessage(string objectName, string message, params object[] args)
+        public string GetComplexMessage(string objectName, string message, params object[] args)
         {
             return $"{_localization[objectName]} {_localization[message, args]}";
+        }
+        public string GetSimpleMessage(string resourceKey)
+        {
+            return $"{_localization[resourceKey]}";
         }
     }
 }

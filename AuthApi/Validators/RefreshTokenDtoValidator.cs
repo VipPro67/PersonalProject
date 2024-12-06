@@ -14,6 +14,6 @@ public class RefreshTokenDtoValidator : AbstractValidator<RefreshTokenDto>
     {
         _localizationHelper = new LocalizationHelper(localization);
         RuleFor(x => x.RefreshToken)
-            .NotEmpty().WithMessage(_localizationHelper.GetLocalizedMessage(ResourceKey.RefreshToken, ResourceKey.Required));
+            .NotEmpty().WithMessage(_localizationHelper.GetComplexMessage(ResourceKey.RefreshToken, ResourceKey.Required));
     }
 }

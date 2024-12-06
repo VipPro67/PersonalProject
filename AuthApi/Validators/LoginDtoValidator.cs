@@ -13,9 +13,9 @@ public class LoginDtoValidator : AbstractValidator<LoginDto>
     {
         _localizationHelper = new LocalizationHelper(localization);
         RuleFor(x => x.UserName)
-            .NotEmpty().WithMessage(_localizationHelper.GetLocalizedMessage(ResourceKey.Username, ResourceKey.Required));
+            .NotEmpty().WithMessage(_localizationHelper.GetComplexMessage(ResourceKey.Username, ResourceKey.Required));
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage(_localizationHelper.GetLocalizedMessage(ResourceKey.Password, ResourceKey.Required));
+            .NotEmpty().WithMessage(_localizationHelper.GetComplexMessage(ResourceKey.Password, ResourceKey.Required));
     }
 }
 

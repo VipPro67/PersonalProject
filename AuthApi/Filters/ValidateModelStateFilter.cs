@@ -17,7 +17,7 @@ public class ValidateModelStateFilter : IActionFilter
     }
     public void OnActionExecuted(ActionExecutedContext context)
     {
-        
+
     }
 
     public void OnActionExecuting(ActionExecutingContext context)
@@ -36,7 +36,7 @@ public class ValidateModelStateFilter : IActionFilter
 
         Log.Error("Validation failed for request: {0}", context.HttpContext.Request.Path);
 
-        var errorMessage = _localizationHelper.GetLocalizedMessage(ResourceKey.Validation, ResourceKey.Failed);
+        var errorMessage = _localizationHelper.GetComplexMessage(ResourceKey.Validation, ResourceKey.Failed);
         context.Result = new BadRequestObjectResult(new ErrorResponse(400, errorMessage, errors));
     }
 }

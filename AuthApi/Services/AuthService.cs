@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Serilog;
 
 namespace AuthApi.Services
 
@@ -39,7 +40,8 @@ namespace AuthApi.Services
             if (await _userRepository.IsUserExistAsync(registerDto.Email, registerDto.UserName))
             {
                 result.Success = false;
-                result.Message = "User already exists! Please choose a different username or email.";
+                result.Message = "UserExists";
+                Log.Error($"User name or email already exists {registerDto.UserName} - {registerDto.Email}");
                 return result;
             }
             AppUser newUser = new AppUser
@@ -54,7 +56,8 @@ namespace AuthApi.Services
             if (saveUser == null)
             {
                 result.Success = false;
-                result.Message = "User registered failed!";
+                result.Message = "SaveDBFailed";
+                Log.Error($"Save user into database failed.");
                 return result;
             }
             string accessToken = GenerateToken(saveUser);
@@ -62,12 +65,12 @@ namespace AuthApi.Services
             if (!await _refreshTokenRepository.AddRefreshTokenAsync(refreshToken))
             {
                 result.Success = false;
-                result.Message = "Failed to generate refresh token.";
+                result.Message = "SaveDBFailed";
+                Log.Error($"Save refresh token into database failed.");
                 return result;
             }
 
             result.Success = true;
-            result.Message = "User registered successfully!";
             result.AccessToken = accessToken;
             result.RefreshToken = refreshToken.Token;
             return result;
@@ -77,17 +80,22 @@ namespace AuthApi.Services
             var result = new AuthResult();
             var user = await _userRepository.GetAppUserByUserNameAsync(loginDto.UserName);
             if (user == null || !PasswordHelper.VerifyPassword(loginDto.Password, user.PasswordHash))
-            { result.Success = false; result.Message = "Invalid username or password."; return result; }
+            {
+                result.Success = false;
+                result.Message = "UsernameOrPasswordInvalid";
+                Log.Error($"Login user {loginDto.UserName} invalid username or password..");
+                return result;
+            }
             string token = GenerateToken(user);
             var refreshToken = GenerateRefreshToken(user);
             if (!await _refreshTokenRepository.AddRefreshTokenAsync(refreshToken))
             {
                 result.Success = false;
-                result.Message = "Failed to generate refresh token.";
+                result.Message = "SaveDBFailed";
+                Log.Error("Save refresh token into database failed.");
                 return result;
             }
             result.Success = true;
-            result.Message = "Login successful!";
             result.AccessToken = token;
             result.RefreshToken = refreshToken.Token;
             return result;
@@ -101,7 +109,8 @@ namespace AuthApi.Services
             if (storedRefreshToken == null || storedRefreshToken.ExpiresAt < DateTime.UtcNow)
             {
                 result.Success = false;
-                result.Message = "Invalid or expired refresh token.";
+                result.Message = "RefreshtokenInvalidOrExpired";
+                Log.Error($"Invalid or expired refresh token {refreshToken}");
                 return result;
             }
 
@@ -109,7 +118,8 @@ namespace AuthApi.Services
             if (user == null)
             {
                 result.Success = false;
-                result.Message = "User not found.";
+                result.Message = "RefreshtokenInvalidOrExpired";
+                Log.Error($"User not found {storedRefreshToken.UserId}");
                 return result;
             }
 
@@ -120,7 +130,6 @@ namespace AuthApi.Services
             await _refreshTokenRepository.AddRefreshTokenAsync(newRefreshToken);
 
             result.Success = true;
-            result.Message = "Token refreshed successfully.";
             result.AccessToken = newAccessToken;
             result.RefreshToken = newRefreshToken.Token;
             return result;
