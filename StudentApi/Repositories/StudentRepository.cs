@@ -1,11 +1,12 @@
 using StudentApi.Data;
 using StudentApi.Models;
 using Microsoft.EntityFrameworkCore;
+using StudentApi.Helpers;
 
 namespace StudentApi.Repositories;
 public interface IStudentRepository
 {
-    Task<List<Student>> GetAllStudentsAsync();
+    Task<List<Student>> GetAllStudentsAsync(StudentQuery query);
 
 
     Task<Student?> GetStudentByIdAsync(int studentId);
@@ -48,9 +49,40 @@ public class StudentRepository : IStudentRepository
         return result > 0;
     }
 
-    public async Task<List<Student>> GetAllStudentsAsync()
+    public async Task<List<Student>> GetAllStudentsAsync(StudentQuery query)
     {
-        return await _context.Students.ToListAsync();
+        var students = _context.Students.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(query.StudentName))
+        {
+            students = students.Where(s => s.FullName.Contains(query.StudentName));
+        }
+        if (!string.IsNullOrWhiteSpace(query.Email))
+        {
+            students = students.Where(s => s.Email.Contains(query.Email));
+        }
+        if (!string.IsNullOrWhiteSpace(query.PhoneNumber))
+        {
+            students = students.Where(s => s.PhoneNumber.Contains(query.PhoneNumber));
+        }
+        if (!string.IsNullOrEmpty(query.Address))
+        {
+            students = students.Where(c => c.Address.Contains(query.Address));
+        }
+
+        if (query.GradeMin.HasValue)
+        {
+            students = students.Where(c => c.Grade >= query.GradeMin);
+        }
+        if (query.GradeMax.HasValue)
+        {
+            students = students.Where(c => c.Grade <= query.GradeMax);
+        }
+        if (query.Page.HasValue && query.ItemsPerPage.HasValue)
+        {
+            students = students.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
+                          .Take(query.ItemsPerPage.Value);
+        }
+        return await students.ToListAsync();
     }
 
     public async Task<Student?> GetStudentByEmailAsync(string email)

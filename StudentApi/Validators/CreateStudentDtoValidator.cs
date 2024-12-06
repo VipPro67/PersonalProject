@@ -18,7 +18,7 @@ public class CreateStudentDtoValidator : AbstractValidator<CreateStudentDto>
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("PhoneNumber is required")
             .MaximumLength(20).WithMessage("PhoneNumber should not exceed 20 characters")
-            .Matches("[0-9]").WithMessage("PhoneNumber should only contain numeric characters");
+            .Matches(@"^\d{10}$").WithMessage("PhoneNumber should only contain numeric characters");
 
         RuleFor(x => x.DateOfBirth)
             .NotEmpty().WithMessage("DateOfBirth is required")
