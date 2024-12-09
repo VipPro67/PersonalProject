@@ -9,7 +9,7 @@ using Serilog;
 namespace CourseApi.Services;
 public interface ICourseService
 {
-    Task<List<Course>> GetCoursesAsync();
+    Task<List<Course>> GetCoursesAsync(CourseQuery query  );
     Task<Course?> GetCourseByCourseIdAsync(string courseId);
     Task<Course?> CreateCourseAsync(CreateCourseDto createCourseDto);
     Task<Course?> UpdateCourseAsync(string courseId, UpdateCourseDto updateCourseDto);
@@ -32,9 +32,9 @@ public class CourseService : ICourseService
         _mapper = mapper;
     }
 
-    public async Task<List<Course>> GetCoursesAsync()
+    public async Task<List<Course>> GetCoursesAsync(CourseQuery query)
     {
-        var courses = await _courseRepository.GetAllCoursesAsync();
+        var courses = await _courseRepository.GetAllCoursesAsync(query);
         return courses;
     }
 
@@ -78,6 +78,13 @@ public class CourseService : ICourseService
         if (course == null)
         {
             Log.Error("Course not found for id: {Id}", courseId);
+            return false;
+        }
+        //check course enrollment 
+        var enrollments = _enrollmentRepository.GetEnrollmentsByCourseIdAsync(course.CourseId);
+        if (enrollments != null)
+        {
+            Log.Error("Delete course failed!. Exist enrollment in this course");
             return false;
         }
         return await _courseRepository.DeleteCourseAsync(course);

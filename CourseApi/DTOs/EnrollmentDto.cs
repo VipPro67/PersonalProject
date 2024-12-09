@@ -6,7 +6,6 @@ public class EnrollmentDto
     public string? CourseId { get; set; }
     public string? CourseName { get; set; }
     public int? StudentId { get; set; }
-
     public string? StudentName { get; set; }
 
 }

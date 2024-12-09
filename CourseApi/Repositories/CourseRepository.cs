@@ -1,14 +1,16 @@
 ﻿using CourseApi.Data;
 using CourseApi.Models;
+using CourseApi.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace CourseApi.Repositories;
 public interface ICourseRepository
 {
-    Task<List<Course>> GetAllCoursesAsync();
+    Task<List<Course>?> GetAllCoursesAsync(CourseQuery query);
+
+    Task<List<Course>?> GetCoursesByIdsAsync(List<string> courseIds);
     Task<Course?> GetCourseByCourseIdAsync(string courseId);
     Task<Course?> EditCourseAsync(Course course);
-
     Task<Course?> CreateCourseAsync(Course course);
     Task<bool> DeleteCourseAsync(Course course);
 
@@ -20,7 +22,7 @@ public class CourseRepository : ICourseRepository
     public CourseRepository(ApplicationDbContext context)
     {
         _context = context;
-    }   
+    }
 
     public async Task<Course?> CreateCourseAsync(Course course)
     {
@@ -44,13 +46,70 @@ public class CourseRepository : ICourseRepository
         return await _context.Courses.FindAsync(course.CourseId);
     }
 
-    public async Task<List<Course>> GetAllCoursesAsync()
+    public async Task<List<Course>> GetAllCoursesAsync(CourseQuery query)
     {
-        return await _context.Courses.ToListAsync();
+        var courses = _context.Courses.AsQueryable();
+        if (!string.IsNullOrEmpty(query.CourseId))
+        {
+            courses = courses.Where(c => c.CourseId.Contains(query.CourseId));
+        }
+        if (!string.IsNullOrEmpty(query.CourseName))
+        {
+            courses = courses.Where(c => c.CourseName.Contains(query.CourseName));
+        }
+        if (!string.IsNullOrEmpty(query.Instructor))
+        {
+            courses = courses.Where(c => c.Instructor.Contains(query.Instructor));
+        }
+        if (!string.IsNullOrEmpty(query.Department))
+        {
+            courses = courses.Where(c => c.Department.Contains(query.Department));
+        }
+
+        if (query.CreditMin.HasValue)
+        {
+            courses = courses.Where(c => c.Credit >= query.CreditMin);
+        }
+        if (query.CreditMax.HasValue)
+        {
+            courses = courses.Where(c => c.Credit <= query.CreditMax);
+        }
+        // if (query.StartDateMin.HasValue)
+        // {
+        //     courses = courses.Where(c => c.StartDate >= query.StartDateMin);
+        // }
+        // if (query.StartDateMax.HasValue)
+        // {
+        //     courses = courses.Where(c => c.StartDate <= query.StartDateMax);
+        // }
+        // if (query.EndDateMin.HasValue)
+        // {
+        //     courses = courses.Where(c => c.EndDate >= query.EndDateMin);
+        // }
+        // if (query.EndDateMax.HasValue)
+        // {
+        //     courses = courses.Where(c => c.EndDate >= query.EndDateMax);
+        // }
+        if (!string.IsNullOrEmpty(query.Schedule))
+        {
+            courses = courses.Where(c => c.Schedule.Contains(query.Schedule));
+        }
+        if (query.Page.HasValue && query.ItemsPerPage.HasValue)
+        {
+            courses = courses.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
+                          .Take(query.ItemsPerPage.Value);
+        }
+
+        return await courses.ToListAsync();
+    }
+
+    public async Task<List<Course>?> GetCoursesByIdsAsync(List<string> courseIds)
+    {
+        return await _context.Courses.Where(x => courseIds.Contains(x.CourseId)).ToListAsync();
     }
 
     public async Task<Course?> GetCourseByCourseIdAsync(string courseId)
     {
-        return await _context.Courses.FirstOrDefaultAsync(c => c.CourseId == courseId);
+        return await _context.Courses.Include(c=>c.Enrollments).FirstOrDefaultAsync(c => c.CourseId == courseId);
     }
 }

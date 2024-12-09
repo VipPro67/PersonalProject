@@ -2,7 +2,7 @@ using AutoMapper;
 using CourseApi.DTOs;
 using CourseApi.Models;
 
-namespace CourseApi.Mappings; 
+namespace CourseApi.Mappings;
 public class CourseMappingProfile : Profile
 {
     public CourseMappingProfile()

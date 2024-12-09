@@ -39,7 +39,7 @@ public class EnrollmentService : IEnrollmentService
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
         var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
-        var ids = enrollments.Select(x => x.StudentId).ToList();
+        var ids = enrollments.Select(e => e.StudentId).Distinct().ToList();
         try
         {
             var response = await studentApiClient.GetAsync($"api/students/ids?ids={string.Join("&ids=", ids)}");
@@ -104,7 +104,7 @@ public class EnrollmentService : IEnrollmentService
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
         var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
-        var ids = enrollments.Select(x => x.StudentId).ToList();
+        var ids = enrollments.Select(e => e.StudentId).Distinct().ToList();
 
         try
         {
@@ -162,17 +162,20 @@ public class EnrollmentService : IEnrollmentService
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($"Failed to retrieve student with id {createEnrollmentDto.StudentId} from StudentApi: {response.StatusCode}");
+                return null;
+
             }
             var responseContent = await response.Content.ReadAsStringAsync();
             var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent);
-            if (apiResponse?.Data != null && apiResponse.Data.StudentId == createEnrollmentDto.StudentId)
+            if (apiResponse?.Data == null || apiResponse.Data.StudentId != createEnrollmentDto.StudentId)
             {
-                var enrollment = _mapper.Map<Enrollment>(createEnrollmentDto);
-                await _enrollmentRepository.CreateEnrollmentAsync(enrollment);
-                return enrollment;
+                Log.Error("Some thing wrong with student info");
+                return null;
             }
-            return null;
 
+            var enrollment = _mapper.Map<Enrollment>(createEnrollmentDto);
+            await _enrollmentRepository.CreateEnrollmentAsync(enrollment);
+            return enrollment;
         }
         catch (Exception e)
         {
@@ -190,7 +193,4 @@ public class EnrollmentService : IEnrollmentService
         await _enrollmentRepository.DeleteEnrollmentAsync(enrollment);
         return true;
     }
-
-
-
 }

@@ -28,12 +28,12 @@ namespace CourseApi.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllCoursesAsync()
+        public async Task<IActionResult> GetAllCoursesAsync([FromQuery] CourseQuery query)
         {
             Log.Information($"Request from user: userId: {Request.Headers["X-UserId"]}, userName: {Request.Headers["X-UserName"]}, Email: {Request.Headers["X-Email"]}");
 
 
-            var courses = await _courseService.GetCoursesAsync();
+            var courses = await _courseService.GetCoursesAsync(query);
 
             return Ok(new SuccessResponse(200, "Get list courses successfully", _mapper.Map<List<CourseDto>>(courses)));
         }
@@ -65,7 +65,6 @@ namespace CourseApi.Controllers
             }
             return Ok(new SuccessResponse(200, "Get students in course successfully", _mapper.Map<List<StudentDto>>(students)));
         }
-
 
         [HttpPost]
         public async Task<IActionResult> AddCourseAsync([FromBody] CreateCourseDto course)
