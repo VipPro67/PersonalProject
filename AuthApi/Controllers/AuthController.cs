@@ -1,8 +1,10 @@
 ﻿using AuthApi.DTOs;
 using AuthApi.Helpers;
+using AuthApi.Resources;
 using AuthApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Serilog;
 
 namespace AuthApi.Controllers
@@ -12,10 +14,12 @@ namespace AuthApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly LocalizationHelper _localizationHelper;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, IStringLocalizer<Resource> localization)
         {
             _authService = authService;
+            _localizationHelper = new LocalizationHelper(localization);
         }
 
         [HttpPost]
@@ -25,32 +29,33 @@ namespace AuthApi.Controllers
             var result = await _authService.Register(registerDto);
             if (!result.Success)
             {
-                Log.Error($"Failed to register user: {registerDto.UserName}", registerDto.UserName);
-                return StatusCode(400, new ErrorResponse(400, "Registration failed", result.Message ?? "Unknown error"));
+                return StatusCode(400, new ErrorResponse(400, _localizationHelper.GetComplexMessage(ResourceKey.Registration, ResourceKey.Failed), _localizationHelper.GetSimpleMessage(result.Message)));
             }
             Log.Information($"User {registerDto.UserName} registered successfully", registerDto.UserName);
-            return Ok(new SuccessResponse(200, result.Message ?? "Registration successful", result.AccessToken));
+            return Ok(new SuccessResponse(200, _localizationHelper.GetComplexMessage(ResourceKey.Registration, ResourceKey.Successful), new
+            {
+                result.AccessToken,
+                result.RefreshToken
+            }));
         }
 
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            //Log current Accept-Language header for localization
-            Log.Information($"Current Accept-Language header: {Request.Headers["Accept-Language"]}");
             var result = await _authService.Login(loginDto);
             if (!result.Success)
             {
-                Log.Information($"Failed login attempt for user: {loginDto.UserName}", loginDto.UserName);
-                return StatusCode(401, new ErrorResponse(401, "Login failed", result.Message ?? "Invalid credentials"));
+                return StatusCode(401, new ErrorResponse(401, _localizationHelper.GetComplexMessage(ResourceKey.Login, ResourceKey.Failed), _localizationHelper.GetSimpleMessage(result.Message)));
             }
             Log.Information($"User {loginDto.UserName} logged in successfully", loginDto.UserName);
-            return Ok(new SuccessResponse(200, result.Message ?? "Login successful", new
+            return Ok(new SuccessResponse(200, result.Message ?? _localizationHelper.GetComplexMessage(ResourceKey.Login, ResourceKey.Successful), new
             {
                 result.AccessToken,
                 result.RefreshToken
             }));
         }
+
         [HttpPost]
         [Route("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDto refreshTokenDto)
@@ -58,9 +63,10 @@ namespace AuthApi.Controllers
             var result = await _authService.RefreshToken(refreshTokenDto.RefreshToken);
             if (!result.Success)
             {
-                return StatusCode(401, new ErrorResponse(401, "Refresh token failed", result.Message ?? "Invalid refresh token"));
+                return StatusCode(401, new ErrorResponse(401, _localizationHelper.GetComplexMessage(ResourceKey.RefreshToken, ResourceKey.Failed), _localizationHelper.GetSimpleMessage(result.Message)));
             }
-            return Ok(new SuccessResponse(200, result.Message ?? "Login successful", new
+            Log.Information($"User get refreshed successfully");
+            return Ok(new SuccessResponse(200, result.Message ?? _localizationHelper.GetComplexMessage(ResourceKey.RefreshToken, ResourceKey.Successful), new
             {
                 result.AccessToken,
                 result.RefreshToken
@@ -74,14 +80,15 @@ namespace AuthApi.Controllers
             var userId = Request.Headers["X-UserId"].FirstOrDefault();
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(new ErrorResponse(401, "User not authenticated", null));
+                return Unauthorized(new ErrorResponse(401, _localizationHelper.GetComplexMessage(ResourceKey.User, ResourceKey.Unauthenticated), null));
             }
             var result = await _authService.LogoutAll(int.Parse(userId));
             if (!result)
             {
-                return StatusCode(500, new ErrorResponse(500, "Failed to log out users", null));
+                return StatusCode(400, new ErrorResponse(400, _localizationHelper.GetComplexMessage(ResourceKey.Logout, ResourceKey.Failed), null));
             }
-            return Ok(new SuccessResponse(200, "Logged out successfully", null));
+            Log.Information($"User {userId} logged out successfully");
+            return Ok(new SuccessResponse(200, _localizationHelper.GetComplexMessage(ResourceKey.Logout, ResourceKey.Successful), null));
         }
     }
 }

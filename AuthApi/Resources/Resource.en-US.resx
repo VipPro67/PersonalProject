@@ -117,44 +117,148 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Username is required" xml:space="preserve">
-    <value>Username is required</value>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
     <comment/>
   </data>
-  <data name="Username must be at most 50 characters long" xml:space="preserve">
-    <value>Username must be at most 50 characters long</value>
+  <data name="Username" xml:space="preserve">
+    <value>Username</value>
     <comment/>
   </data>
-  <data name="Username must contain only alphanumeric characters" xml:space="preserve">
-    <value>Username must contain only alphanumeric characters</value>
+  <data name="FullName" xml:space="preserve">
+    <value>Full Name</value>
     <comment/>
   </data>
-  <data name="Password is required" xml:space="preserve">
-    <value>Password is required</value>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
     <comment/>
   </data>
-  <data name="Password must be at least 8 characters long" xml:space="preserve">
-    <value>Password must be at least 8 characters long</value>
+  <data name="Address" xml:space="preserve">
+    <value>Address</value>
     <comment/>
   </data>
-  <data name="Password must contain at least one lowercase letter" xml:space="preserve">
-    <value>Password must contain at least one lowercase letter</value>
+  <data name="DateOfBirth" xml:space="preserve">
+    <value>Date of Birth</value>
     <comment/>
   </data>
-  <data name="Password must contain at least one uppercase letter" xml:space="preserve">
-    <value>Password must contain at least one uppercase letter</value>
+  <data name="User" xml:space="preserve">
+    <value>User</value>
     <comment/>
   </data>
-  <data name="Password must contain at least one digit" xml:space="preserve">
-    <value>Password must contain at least one digit</value>
+  <data name="Logout" xml:space="preserve">
+    <value>Logout</value>
     <comment/>
   </data>
-  <data name="Password must contain at least one special character" xml:space="preserve">
-    <value>Password must contain at least one special character</value>
+  <data name="RefreshToken" xml:space="preserve">
+    <value>Refresh Token</value>
     <comment/>
   </data>
-  <data name="Demo" xml:space="preserve">
-    <value>ENGLISH</value>
+  <data name="Token" xml:space="preserve">
+    <value>Token</value>
+    <comment/>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Login</value>
+    <comment/>
+  </data>
+  <data name="Registration" xml:space="preserve">
+    <value>Registration</value>
+    <comment/>
+  </data>
+  <data name="Validation" xml:space="preserve">
+    <value>Validation</value>
+    <comment/>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+    <comment/>
+  </data>
+  <data name="Successful" xml:space="preserve">
+    <value>successful</value>
+    <comment/>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>failed</value>
+    <comment/>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>not found</value>
+    <comment/>
+  </data>
+  <data name="Created" xml:space="preserve">
+    <value>Created</value>
+    <comment/>
+  </data>
+  <data name="Updated" xml:space="preserve">
+    <value>Updated</value>
+    <comment/>
+  </data>
+  <data name="Deleted" xml:space="preserve">
+    <value>Deleted</value>
+    <comment/>
+  </data>
+  <data name="Unauthenticated" xml:space="preserve">
+    <value>unauthenticated</value>
+    <comment/>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>unauthorized</value>
+    <comment/>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>Invalid Token</value>
+    <comment/>
+  </data>
+  <data name="Required" xml:space="preserve">
+    <value>is required.</value>
+    <comment/>
+  </data>
+  <data name="Invalid" xml:space="preserve">
+    <value>is invalid.</value>
+    <comment/>
+  </data>
+  <data name="MustContainUppercase" xml:space="preserve">
+    <value>must contain at least one uppercase character.</value>
+    <comment/>
+  </data>
+  <data name="MustContainLowercase" xml:space="preserve">
+    <value>must contain at least one lowercase character.</value>
+    <comment/>
+  </data>
+  <data name="MustContainSpecialCharacter" xml:space="preserve">
+    <value>must contain at least one special character.</value>
+    <comment/>
+  </data>
+  <data name="MustContainDigit" xml:space="preserve">
+    <value>must contain at least one digit.</value>
+    <comment/>
+  </data>
+  <data name="MaxLength" xml:space="preserve">
+    <value>must be less than {0} characters.</value>
+    <comment/>
+  </data>
+  <data name="MinLength" xml:space="preserve">
+    <value>must be more than {0} characters.</value>
+    <comment/>
+  </data>
+  <data name="Alphanumeric" xml:space="preserve">
+    <value>must contain only alphanumeric characters.</value>
+    <comment/>
+  </data>
+  <data name="UserExists" xml:space="preserve">
+    <value>User name or email already exists.</value>
+    <comment/>
+  </data>
+  <data name="SaveDBFailed" xml:space="preserve">
+    <value> </value>
+    <comment/>
+  </data>
+  <data name="UsernameOrPasswordInvalid" xml:space="preserve">
+    <value>Username or password is invalid.</value>
+    <comment/>
+  </data>
+  <data name="RefreshtokenInvalidOrExpired" xml:space="preserve">
+    <value>The refresh token is invalid or has expired</value>
     <comment/>
   </data>
 </root>

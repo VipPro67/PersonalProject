@@ -1,6 +1,6 @@
 using System.Net;
-using System.Text.Json;
 using AuthApi.Helpers;
+using Newtonsoft.Json;
 
 namespace AuthApi.Middlewares;
 
@@ -39,7 +39,7 @@ public class GlobalExceptionHandlingMiddleware
             exception.Message
         );
 
-        var result = JsonSerializer.Serialize(response);
+        var result = JsonConvert.SerializeObject(response);
         return context.Response.WriteAsync(result);
     }
 }
