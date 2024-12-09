@@ -7,9 +7,11 @@ public class CourseMappingProfile : Profile
 {
     public CourseMappingProfile()
     {
-        CreateMap<CreateCourseDto, Course>();
+        CreateMap<CreateCourseDto, Course>()
+            .ForMember(dest => dest.CourseId, opt => opt.MapFrom(src => src.CourseId.ToUpper()));
         CreateMap<Course, CourseDto>();
         CreateMap<UpdateCourseDto, Course>();
+
 
         CreateMap<Enrollment, EnrollmentDto>()
             .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.Course.CourseName))

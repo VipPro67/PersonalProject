@@ -29,7 +29,6 @@ public class CourseRepository : ICourseRepository
         await _context.Courses.AddAsync(course);
         await _context.SaveChangesAsync();
         return await _context.Courses.FindAsync(course.CourseId);
-
     }
 
     public async Task<bool> DeleteCourseAsync(Course course)
@@ -51,7 +50,7 @@ public class CourseRepository : ICourseRepository
         var courses = _context.Courses.AsQueryable();
         if (!string.IsNullOrEmpty(query.CourseId))
         {
-            courses = courses.Where(c => c.CourseId.Contains(query.CourseId));
+            courses = courses.Where(c => c.CourseId.Contains(query.CourseId.ToUpper()));
         }
         if (!string.IsNullOrEmpty(query.CourseName))
         {
@@ -99,17 +98,16 @@ public class CourseRepository : ICourseRepository
             courses = courses.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
                           .Take(query.ItemsPerPage.Value);
         }
-
         return await courses.ToListAsync();
     }
 
     public async Task<List<Course>?> GetCoursesByIdsAsync(List<string> courseIds)
     {
-        return await _context.Courses.Where(x => courseIds.Contains(x.CourseId)).ToListAsync();
+        return await _context.Courses.Where(x => courseIds.Contains(x.CourseId.ToUpper())).ToListAsync();
     }
 
     public async Task<Course?> GetCourseByCourseIdAsync(string courseId)
     {
-        return await _context.Courses.Include(c=>c.Enrollments).FirstOrDefaultAsync(c => c.CourseId == courseId);
+        return await _context.Courses.Include(c=>c.Enrollments).FirstOrDefaultAsync(c => c.CourseId == courseId.ToUpper());
     }
 }

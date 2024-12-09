@@ -9,13 +9,13 @@ using StudentApi.Repositories;
 namespace StudentApi.Services;
 public interface IStudentService
 {
-    Task<Student?> GetStudentByIdAsync(int id);
-    Task<List<Student>?> GetStudentsByIdsAsync(List<int> ids);
-    Task<Student?> GetStudentByEmailAsync(string email);
-    Task<Student?> CreateStudentAsync(CreateStudentDto student);
-    Task<List<Student>> GetStudentsAsync(StudentQuery query);
-    Task<Student?> UpdateStudentAsync(int id, UpdateStudentDto updatedStudent);
-    Task<bool> DeleteStudentAsync(int studentId);
+    Task<ServiceResult<StudentDto?>> GetStudentByIdAsync(int id);
+    Task<ServiceResult<List<StudentDto>?>> GetStudentsByIdsAsync(List<int> ids);
+    Task<ServiceResult<StudentDto?>> GetStudentByEmailAsync(string email);
+    Task<ServiceResult<StudentDto?>> CreateStudentAsync(CreateStudentDto student);
+    Task<ServiceResult<List<StudentDto>>> GetStudentsAsync(StudentQuery query);
+    Task<ServiceResult<StudentDto?>> UpdateStudentAsync(int id, UpdateStudentDto updatedStudent);
+    Task<ServiceResult<bool>> DeleteStudentAsync(int studentId);
 }
 
 public class StudentService : IStudentService
@@ -28,24 +28,24 @@ public class StudentService : IStudentService
         _studentRepository = studentRepository;
         _mapper = mapper;
     }
-    public async Task<Student?> CreateStudentAsync(CreateStudentDto createStudentDto)
+    public async Task<ServiceResult<StudentDto?>> CreateStudentAsync(CreateStudentDto createStudentDto)
     {
         if (await _studentRepository.GetStudentByEmailAsync(createStudentDto.Email) != null)
         {
             Log.Error($"Create student failed. Student with email {createStudentDto.Email} already exists");
-            return null;
+            return new ServiceResult<StudentDto?>(ResultType.BadRequest, "Student with email already exists");
         }
-        var student = _mapper.Map<Student>(createStudentDto);
-        return await _studentRepository.CreateStudentAsync(student);
+        var result = await _studentRepository.CreateStudentAsync(_mapper.Map<Student>(createStudentDto));
+        return new ServiceResult<StudentDto?>(_mapper.Map<StudentDto?>(result), "Create student successfully");
     }
 
-    public async Task<bool> DeleteStudentAsync(int studentId)
+    public async Task<ServiceResult<bool>> DeleteStudentAsync(int studentId)
     {
         var student = await _studentRepository.GetStudentByIdAsync(studentId);
         if (student == null)
         {
             Log.Error($"Detele student with id {studentId} failed. Student not found");
-            return false;
+            return new ServiceResult<bool>(ResultType.NotFound, "Student not found");
         }
         try
         {
@@ -54,60 +54,71 @@ public class StudentService : IStudentService
             var response = await courseApiClient.GetAsync($"api/enrollments/students/{studentId}");
             if (!response.IsSuccessStatusCode)
             {
-                Log.Error($"Failed to retrieve enrollments with studentId {studentId} from StudentApi: {response.StatusCode}");
-                return false;
+                Log.Error($"Failed to retrieve enrollments with studentId {studentId} from CourseApi: {response.StatusCode}");
+                return new ServiceResult<bool>(ResultType.BadRequest, "Failed to retrieve enrollments from CourseApi");
             }
             var responseContent = await response.Content.ReadAsStringAsync();
             var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<EnrollmentDto>>>(responseContent);
             if (apiResponse.Data.Any(e => e.StudentId == studentId))
             {
                 Log.Error($"Detele student with id {studentId} failed. Student are in course");
-                return false;
+                return new ServiceResult<bool>(ResultType.BadRequest, "Student are in course");
             }
+            var result = await _studentRepository.DeleteStudentAsync(student);
+            if (!result)
+            {
+                Log.Error($"Detele student with id {studentId} failed.");
+                return new ServiceResult<bool>(ResultType.InternalServerError, "Failed to delete student from CourseApi");
+            }
+            return new ServiceResult<bool>(ResultType.Ok, "Delete student successfully");
 
-            return await _studentRepository.DeleteStudentAsync(student);
         }
         catch (Exception e)
         {
-            Log.Error($"Error retrieving students from StudentApi: {e.Message}");
-            return false;
+            Log.Error($"Error retrieving students from CourseApi: {e.Message}");
+            return new ServiceResult<bool>(ResultType.InternalServerError, "Error retrieving students from CourseApi");
         }
     }
 
-    public async Task<Student?> GetStudentByEmailAsync(string email)
+    public async Task<ServiceResult<StudentDto?>> GetStudentByEmailAsync(string email)
     {
-        return await _studentRepository.GetStudentByEmailAsync(email);
+        var student = await _studentRepository.GetStudentByEmailAsync(email);
+        return new ServiceResult<StudentDto?>(_mapper.Map<StudentDto?>(student), "Get student by email successfully");
     }
 
-    public async Task<Student?> GetStudentByIdAsync(int studentId)
+    public async Task<ServiceResult<StudentDto?>> GetStudentByIdAsync(int studentId)
     {
-        return await _studentRepository.GetStudentByIdAsync(studentId);
+        var student = await _studentRepository.GetStudentByIdAsync(studentId);
+        return new ServiceResult<StudentDto?>(_mapper.Map<StudentDto?>(student), "Get student by id successfully");
     }
 
-    public Task<List<Student>> GetStudentsAsync(StudentQuery query)
+    public async Task<ServiceResult<List<StudentDto>>> GetStudentsAsync(StudentQuery query)
     {
-        return _studentRepository.GetAllStudentsAsync(query);
+        var students = await _studentRepository.GetAllStudentsAsync(query);
+        return new ServiceResult<List<StudentDto>>(_mapper.Map<List<StudentDto>>(students), "Get list students successfully");
     }
 
-    public async Task<List<Student>?> GetStudentsByIdsAsync(List<int> ids)
+
+    public async Task<ServiceResult<List<StudentDto>?>> GetStudentsByIdsAsync(List<int> ids)
     {
-        return await _studentRepository.GetStudentsByIdsAsync(ids);
+        var students = await _studentRepository.GetStudentsByIdsAsync(ids);
+        return new ServiceResult<List<StudentDto>?>(_mapper.Map<List<StudentDto>>(students), "Get list students by ids successfully");
     }
 
-    public async Task<Student?> UpdateStudentAsync(int id, UpdateStudentDto updatedStudentDto)
+    public async Task<ServiceResult<StudentDto?>> UpdateStudentAsync(int id, UpdateStudentDto updatedStudentDto)
     {
         if (id != updatedStudentDto.StudentId)
         {
             Log.Error("Id in UpdateStudentDto does not match the id in the URL");
-            return null;
+            return new ServiceResult<StudentDto?>(ResultType.BadRequest, "Id in UpdateStudentDto does not match the id in the URL");
         }
         var existingStudent = await _studentRepository.GetStudentByIdAsync(id);
         if (existingStudent == null)
         {
             Log.Error($"Update student with id {id} failed. Student not found");
-            return null;
+            return new ServiceResult<StudentDto?>(ResultType.NotFound, "Student not found");
         }
-        _mapper.Map(updatedStudentDto, existingStudent);
-        return await _studentRepository.UpdateStudentAsync(existingStudent);
+        var result = await _studentRepository.UpdateStudentAsync(_mapper.Map<Student>(updatedStudentDto));
+        return new ServiceResult<StudentDto?>(_mapper.Map<StudentDto?>(result), "Update student successfully");
     }
 }

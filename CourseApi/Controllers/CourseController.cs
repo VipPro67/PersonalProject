@@ -20,91 +20,53 @@ namespace CourseApi.Controllers
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
-        private readonly IMapper _mapper;
 
-        public CourseController(ICourseService courseService, IMapper mapper)
+        public CourseController(ICourseService courseService)
         {
             _courseService = courseService;
-            _mapper = mapper;
         }
         [HttpGet]
         public async Task<IActionResult> GetAllCoursesAsync([FromQuery] CourseQuery query)
         {
-            Log.Information($"Request from user: userId: {Request.Headers["X-UserId"]}, userName: {Request.Headers["X-UserName"]}, Email: {Request.Headers["X-Email"]}");
-
-
-            var courses = await _courseService.GetCoursesAsync(query);
-
-            return Ok(new SuccessResponse(200, "Get list courses successfully", _mapper.Map<List<CourseDto>>(courses)));
+            var result = await _courseService.GetCoursesAsync(query);
+            return this.ToActionResult(result);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCourseByIdAsync(string id)
         {
-            var course = await _courseService.GetCourseByCourseIdAsync(id);
-            if (course == null)
-            {
-                Log.Error("Course not found for id: {Id}", id);
-                return NotFound(
+            var result = await _courseService.GetCourseByCourseIdAsync(id);
+            return this.ToActionResult(result);
 
-                    new ErrorResponse(404, "Course not found", null)
-                );
-            }
-            return Ok(new SuccessResponse(200, "Get course successfully", _mapper.Map<CourseDto>(course)));
         }
 
         [HttpGet("{id}/students")]
         public async Task<IActionResult> GetStudentsInCourseAsync(string id)
         {
-            var students = await _courseService.GetStudentsByCourseIdAsync(id);
-            if (students == null || !students.Any())
-            {
-                return NotFound(
-                    new ErrorResponse(404, "No students found for this course", null)
-                );
-            }
-            return Ok(new SuccessResponse(200, "Get students in course successfully", _mapper.Map<List<StudentDto>>(students)));
+            var result = await _courseService.GetStudentsByCourseIdAsync(id);
+            return this.ToActionResult(result);
+
         }
 
         [HttpPost]
         public async Task<IActionResult> AddCourseAsync([FromBody] CreateCourseDto course)
         {
             var result = await _courseService.CreateCourseAsync(course);
-            if (result == null)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    new ErrorResponse(500, "Failed to create course", null)
-                );
-            }
-            return Ok(new SuccessResponse(200, "Create course successfully", _mapper.Map<CourseDto>(result)));
+            return this.ToActionResult(result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCourseAsync(string id, [FromBody] UpdateCourseDto course)
         {
-            Log.Information("Updating course with id: {Id}", id);
-            var updatedCourse = await _courseService.UpdateCourseAsync(id, course);
-            if (updatedCourse == null)
-            {
-                return NotFound(
-                    new ErrorResponse(404, "Course not found", null)
-                );
-            }
-            return Ok(new SuccessResponse(200, "Update course successfully", _mapper.Map<CourseDto>(updatedCourse)));
+            var result = await _courseService.UpdateCourseAsync(id, course);
+            return this.ToActionResult(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourseAsync(string id)
         {
-            var deletedCourse = await _courseService.DeleteCourseAsync(id);
-            if (deletedCourse == false)
-            {
-                return NotFound(
-                    new ErrorResponse(404, "Course not found", null)
-                );
-            }
-
-            return Ok(new SuccessResponse(200, "Course deleted successfully", null));
+            var result = await _courseService.DeleteCourseAsync(id);
+            return this.ToActionResult(result);
         }
     }
 }

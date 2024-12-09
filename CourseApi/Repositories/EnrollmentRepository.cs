@@ -47,12 +47,12 @@ public class EnrollmentRepository : IEnrollmentRepository
 
     public async Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync(string courseId)
     {
-        return await _context.Enrollments.Include(e => e.Course).Where(e => e.CourseId == courseId).ToListAsync();
+        return await _context.Enrollments.Include(e => e.Course).Where(e => e.CourseId == courseId.ToUpper()).ToListAsync();
     }
 
-    public async Task<List<Enrollment>?> GetEnrollmentsByStudentIdAsync(int courseId)
+    public async Task<List<Enrollment>?> GetEnrollmentsByStudentIdAsync(int studentId)
     {
-        return await _context.Enrollments.Include(e => e.Course).Where(e => e.StudentId == courseId).ToListAsync();
+        return await _context.Enrollments.Include(e => e.Course).Where(e => e.StudentId == studentId    ).ToListAsync();
     }
 
     public async Task<Enrollment?> GetEnrollmentByIdAsync(int enrollmentId)
@@ -62,6 +62,6 @@ public class EnrollmentRepository : IEnrollmentRepository
 
     public Task<bool> IsStudentEnrolledInCourseAsync(int enrollmentId, string courseId)
     {
-        return _context.Enrollments.AnyAsync(e => e.EnrollmentId == enrollmentId && e.CourseId == courseId);
+        return _context.Enrollments.AnyAsync(e => e.EnrollmentId == enrollmentId && e.CourseId == courseId.ToUpper());
     }
 }
