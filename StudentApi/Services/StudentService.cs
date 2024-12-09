@@ -1,6 +1,8 @@
 using AutoMapper;
+using Newtonsoft.Json;
 using Serilog;
 using StudentApi.DTOs;
+using StudentApi.Helpers;
 using StudentApi.Models;
 using StudentApi.Repositories;
 
@@ -11,7 +13,7 @@ public interface IStudentService
     Task<List<Student>?> GetStudentsByIdsAsync(List<int> ids);
     Task<Student?> GetStudentByEmailAsync(string email);
     Task<Student?> CreateStudentAsync(CreateStudentDto student);
-    Task<List<Student>> GetStudentsAsync();
+    Task<List<Student>> GetStudentsAsync(StudentQuery query);
     Task<Student?> UpdateStudentAsync(int id, UpdateStudentDto updatedStudent);
     Task<bool> DeleteStudentAsync(int studentId);
 }
@@ -30,7 +32,7 @@ public class StudentService : IStudentService
     {
         if (await _studentRepository.GetStudentByEmailAsync(createStudentDto.Email) != null)
         {
-            Log.Information($"Student with email {createStudentDto.Email} already exists");
+            Log.Error($"Create student failed. Student with email {createStudentDto.Email} already exists");
             return null;
         }
         var student = _mapper.Map<Student>(createStudentDto);
@@ -42,9 +44,34 @@ public class StudentService : IStudentService
         var student = await _studentRepository.GetStudentByIdAsync(studentId);
         if (student == null)
         {
+            Log.Error($"Detele student with id {studentId} failed. Student not found");
             return false;
         }
-        return await _studentRepository.DeleteStudentAsync(student);
+        try
+        {
+            var courseApiUrl = Environment.GetEnvironmentVariable("CourseApiUrl");
+            var courseApiClient = new HttpClient { BaseAddress = new Uri(courseApiUrl) };
+            var response = await courseApiClient.GetAsync($"api/enrollments/students/{studentId}");
+            if (!response.IsSuccessStatusCode)
+            {
+                Log.Error($"Failed to retrieve enrollments with studentId {studentId} from StudentApi: {response.StatusCode}");
+                return false;
+            }
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<EnrollmentDto>>>(responseContent);
+            if (apiResponse.Data.Any(e => e.StudentId == studentId))
+            {
+                Log.Error($"Detele student with id {studentId} failed. Student are in course");
+                return false;
+            }
+
+            return await _studentRepository.DeleteStudentAsync(student);
+        }
+        catch (Exception e)
+        {
+            Log.Error($"Error retrieving students from StudentApi: {e.Message}");
+            return false;
+        }
     }
 
     public async Task<Student?> GetStudentByEmailAsync(string email)
@@ -57,9 +84,9 @@ public class StudentService : IStudentService
         return await _studentRepository.GetStudentByIdAsync(studentId);
     }
 
-    public Task<List<Student>> GetStudentsAsync()
+    public Task<List<Student>> GetStudentsAsync(StudentQuery query)
     {
-        return _studentRepository.GetAllStudentsAsync();
+        return _studentRepository.GetAllStudentsAsync(query);
     }
 
     public async Task<List<Student>?> GetStudentsByIdsAsync(List<int> ids)
@@ -71,12 +98,13 @@ public class StudentService : IStudentService
     {
         if (id != updatedStudentDto.StudentId)
         {
-            Log.Information("Id in UpdateStudentDto does not match the id in the URL");
+            Log.Error("Id in UpdateStudentDto does not match the id in the URL");
             return null;
         }
         var existingStudent = await _studentRepository.GetStudentByIdAsync(id);
         if (existingStudent == null)
         {
+            Log.Error($"Update student with id {id} failed. Student not found");
             return null;
         }
         _mapper.Map(updatedStudentDto, existingStudent);

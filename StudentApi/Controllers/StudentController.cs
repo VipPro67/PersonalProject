@@ -22,9 +22,9 @@ namespace StudentApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllStudentsAsync()
+        public async Task<IActionResult> GetAllStudentsAsync([FromQuery] StudentQuery query)
         {
-            var students = await _studentService.GetStudentsAsync();
+            var students = await _studentService.GetStudentsAsync(query);
             return Ok(new SuccessResponse(200, "Get list students successfully", _mapper.Map<List<StudentDto>>(students)));
         }
 
@@ -90,13 +90,7 @@ namespace StudentApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStudentAsync(int id)
         {
-            var student = await _studentService.GetStudentByIdAsync(id);
-            if (student == null)
-            {
-                return NotFound(
-                    new ErrorResponse(404, "Student not found", null)
-                );
-            }
+            
             var result = await _studentService.DeleteStudentAsync(id);
             if (result == false)
             {
