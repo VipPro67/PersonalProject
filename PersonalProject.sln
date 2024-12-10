@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CourseApi", "CourseApi\Cour
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthApi", "AuthApi\AuthApi.csproj", "{6C6232DE-31C2-4923-8A81-F7C84BF311FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthApiTest", "AuthApiTest\AuthApiTest.csproj", "{C976B425-2F10-4DAF-8115-0A0949C3C36F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{6C6232DE-31C2-4923-8A81-F7C84BF311FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C6232DE-31C2-4923-8A81-F7C84BF311FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C6232DE-31C2-4923-8A81-F7C84BF311FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C976B425-2F10-4DAF-8115-0A0949C3C36F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C976B425-2F10-4DAF-8115-0A0949C3C36F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C976B425-2F10-4DAF-8115-0A0949C3C36F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C976B425-2F10-4DAF-8115-0A0949C3C36F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

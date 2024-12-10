@@ -26,6 +26,7 @@ namespace AuthApi.Controllers
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
+            var modelState = ModelState.IsValid;
             var result = await _authService.Register(registerDto);
             if (!result.Success)
             {
