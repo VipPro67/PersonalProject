@@ -110,7 +110,6 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 app.UseCors("AllowAPIGateWay");
 app.UseGlobalExceptionHandling();
-app.UseCustomMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

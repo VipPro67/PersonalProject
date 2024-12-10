@@ -8,14 +8,14 @@ namespace AuthApi.Validators;
 
 public class LoginDtoValidator : AbstractValidator<LoginDto>
 {
-    private readonly LocalizationHelper _localizationHelper;
+    private readonly IStringLocalizer<Resource> _localization;
     public LoginDtoValidator(IStringLocalizer<Resource> localization)
     {
-        _localizationHelper = new LocalizationHelper(localization);
+        _localization = localization;
         RuleFor(x => x.UserName)
-            .NotEmpty().WithMessage(_localizationHelper.GetComplexMessage(ResourceKey.Username, ResourceKey.Required));
+            .NotEmpty().WithMessage(_localization[ResourceKey.UsernameRequired]);
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage(_localizationHelper.GetComplexMessage(ResourceKey.Password, ResourceKey.Required));
+            .NotEmpty().WithMessage(_localization[ResourceKey.PasswordRequired]);
     }
 }
 

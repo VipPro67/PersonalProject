@@ -9,11 +9,11 @@ namespace AuthApi.Filters;
 
 public class ValidateModelStateFilter : IActionFilter
 {
-    private readonly LocalizationHelper _localizationHelper;
+    private readonly IStringLocalizer<Resource> _localization;
 
     public ValidateModelStateFilter(IStringLocalizer<Resource> localization)
     {
-        _localizationHelper = new LocalizationHelper(localization);
+        _localization = localization;
     }
     public void OnActionExecuted(ActionExecutedContext context)
     {
@@ -33,11 +33,12 @@ public class ValidateModelStateFilter : IActionFilter
                 kvp => kvp.Key,
                 kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
             );
-
+    
         Log.Error("Validation failed for request: {0}", context.HttpContext.Request.Path);
 
-        var errorMessage = _localizationHelper.GetComplexMessage(ResourceKey.Validation, ResourceKey.Failed);
+        var errorMessage = _localization[ResourceKey.ValidationFailed];
         context.Result = new BadRequestObjectResult(new ErrorResponse(400, errorMessage, errors));
+
     }
 }
 

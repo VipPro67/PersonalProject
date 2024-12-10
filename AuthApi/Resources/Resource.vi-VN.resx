@@ -117,132 +117,108 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Password" xml:space="preserve">
-    <value>Mật khẩu</value>
+  <data name="LogoutSuccessful" xml:space="preserve">
+    <value>Đăng xuất thành công.</value>
     <comment/>
   </data>
-  <data name="Username" xml:space="preserve">
-    <value>Tên đăng nhập</value>
+  <data name="LogoutFailed" xml:space="preserve">
+    <value>Đăng xuất thất bại.</value>
     <comment/>
   </data>
-  <data name="FullName" xml:space="preserve">
-    <value>Họ và tên</value>
+  <data name="UserUnauthenticated" xml:space="preserve">
+    <value>Người dùng chưa xác thực.</value>
     <comment/>
   </data>
-  <data name="Email" xml:space="preserve">
-    <value>Thư điện tử</value>
+  <data name="RefreshTokenSuccessful" xml:space="preserve">
+    <value>Làm mới mã thành công.</value>
     <comment/>
   </data>
-  <data name="Address" xml:space="preserve">
-    <value>Địa chỉ</value>
+  <data name="RefreshTokenFailed" xml:space="preserve">
+    <value>Làm mới mã thất bại.</value>
     <comment/>
   </data>
-  <data name="DateOfBirth" xml:space="preserve">
-    <value>Ngày sinh</value>
+  <data name="LoginSuccessful" xml:space="preserve">
+    <value>Đăng nhập thành công.</value>
     <comment/>
   </data>
-  <data name="User" xml:space="preserve">
-    <value>Người dùng</value>
+  <data name="LoginFailed" xml:space="preserve">
+    <value>Đăng nhập thất bại.</value>
     <comment/>
   </data>
-  <data name="Logout" xml:space="preserve">
-    <value>Đăng xuất</value>
+  <data name="RegistrationSuccessful" xml:space="preserve">
+    <value>Đăng ký thành công.</value>
     <comment/>
   </data>
-  <data name="RefreshToken" xml:space="preserve">
-    <value>Làm mới mã</value>
+  <data name="RegistrationFailed" xml:space="preserve">
+    <value>Đăng ký thất bại.</value>
     <comment/>
   </data>
-  <data name="Token" xml:space="preserve">
-    <value>Mã</value>
+  <data name="RefreshTokenRequired" xml:space="preserve">
+    <value>Yêu cầu làm mới mã.</value>
     <comment/>
   </data>
-  <data name="Login" xml:space="preserve">
-    <value>Đăng nhập</value>
+  <data name="AddressMaxLength" xml:space="preserve">
+    <value>Địa chỉ không được dài quá {0} ký tự.</value>
     <comment/>
   </data>
-  <data name="Registration" xml:space="preserve">
-    <value>Đăng ký</value>
+  <data name="AddressRequired" xml:space="preserve">
+    <value>Bắt buộc phải có địa chỉ.</value>
     <comment/>
   </data>
-  <data name="Validation" xml:space="preserve">
-    <value>Xác thực</value>
+  <data name="FullNameMaxLength" xml:space="preserve">
+    <value>Họ và tên không được dài quá {0} ký tự.</value>
     <comment/>
   </data>
-  <data name="Error" xml:space="preserve">
-    <value>Lỗi</value>
+  <data name="FullNameRequired" xml:space="preserve">
+    <value>Bắt buộc phải có họ và tên.</value>
     <comment/>
   </data>
-  <data name="Successful" xml:space="preserve">
-    <value>thành công</value>
+  <data name="EmailInvalid" xml:space="preserve">
+    <value>Email không hợp lệ.</value>
     <comment/>
   </data>
-  <data name="Failed" xml:space="preserve">
-    <value>thất bại</value>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>Bắt buộc phải có email.</value>
     <comment/>
   </data>
-  <data name="NotFound" xml:space="preserve">
-    <value>Không tìm thấy</value>
+  <data name="PasswordMustContainSpecialCharacter" xml:space="preserve">
+    <value>Mật khẩu phải chứa ít nhất một ký tự đặc biệt.</value>
     <comment/>
   </data>
-  <data name="Created" xml:space="preserve">
-    <value>Đã tạo</value>
+  <data name="PasswordMustContainDigit" xml:space="preserve">
+    <value>Mật khẩu phải chứa ít nhất một chữ số.</value>
     <comment/>
   </data>
-  <data name="Updated" xml:space="preserve">
-    <value>Đã cập nhật</value>
+  <data name="PasswordMustContainLowercase" xml:space="preserve">
+    <value>Mật khẩu phải chứa ít nhất một chữ cái thường.</value>
     <comment/>
   </data>
-  <data name="Deleted" xml:space="preserve">
-    <value>Đã xóa</value>
+  <data name="PasswordMustContainUppercase" xml:space="preserve">
+    <value>Mật khẩu phải chứa ít nhất một chữ cái hoa.</value>
     <comment/>
   </data>
-  <data name="Unauthenticated" xml:space="preserve">
-    <value>chưa xác thực</value>
+  <data name="PasswordMinLength" xml:space="preserve">
+    <value>Mật khẩu phải dài hơn {0} ký tự.</value>
     <comment/>
   </data>
-  <data name="Unauthorized" xml:space="preserve">
-    <value>chưa được phép</value>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Bắt buộc phải có mật khẩu.</value>
     <comment/>
   </data>
-  <data name="InvalidToken" xml:space="preserve">
-    <value>Mã không hợp lệ</value>
+  <data name="UsernameAlphanumeric" xml:space="preserve">
+    <value>Tên người dùng chỉ được chứa các ký tự chữ và số.</value>
     <comment/>
   </data>
-  <data name="Required" xml:space="preserve">
-    <value>là bắt buộc.</value>
+  <data name="UsernameMaxLength" xml:space="preserve">
+    <value>Tên người dùng không được dài quá {0} ký tự.</value>
     <comment/>
   </data>
-  <data name="Invalid" xml:space="preserve">
-    <value>không hợp lệ.</value>
+  <data name="UsernameRequired" xml:space="preserve">
+    <value>Bắt buộc phải có tên người dùng.</value>
     <comment/>
   </data>
-  <data name="MustContainUppercase" xml:space="preserve">
-    <value>phải chứa ít nhất một ký tự viết hoa.</value>
-    <comment/>
-  </data>
-  <data name="MustContainLowercase" xml:space="preserve">
-    <value>phải chứa ít nhất một ký tự viết thường.</value>
-    <comment/>
-  </data>
-  <data name="MustContainSpecialCharacter" xml:space="preserve">
-    <value>phải chứa ít nhất một ký tự đặc biệt.</value>
-    <comment/>
-  </data>
-  <data name="MustContainDigit" xml:space="preserve">
-    <value>phải chứa ít nhất một chữ số.</value>
-    <comment/>
-  </data>
-  <data name="MaxLength" xml:space="preserve">
-    <value>phải dài ít hơn {0} ký tự.</value>
-    <comment/>
-  </data>
-  <data name="MinLength" xml:space="preserve">
-    <value>phải dài hơn {0} ký tự.</value>
-    <comment/>
-  </data>
-  <data name="Alphanumeric" xml:space="preserve">
-    <value>phải chỉ chứa ký tự chữ và số.</value>
+  <data name="ValidationFailed" xml:space="preserve">
+    <value>Dữ liệu không hợp lệ.</value>
     <comment/>
   </data>
   <data name="UserExists" xml:space="preserve">

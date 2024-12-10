@@ -8,12 +8,12 @@ namespace AuthApi.Validators;
 
 public class RefreshTokenDtoValidator : AbstractValidator<RefreshTokenDto>
 {
-    private readonly LocalizationHelper _localizationHelper;
+    private readonly IStringLocalizer<Resource> _localization;
 
     public RefreshTokenDtoValidator(IStringLocalizer<Resource> localization)
     {
-        _localizationHelper = new LocalizationHelper(localization);
+        _localization = localization;
         RuleFor(x => x.RefreshToken)
-            .NotEmpty().WithMessage(_localizationHelper.GetComplexMessage(ResourceKey.RefreshToken, ResourceKey.Required));
+            .NotEmpty().WithMessage(_localization[ResourceKey.RefreshTokenRequired]);
     }
 }
