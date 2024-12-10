@@ -83,6 +83,66 @@
                 "AllowedScopes": []
             },
             "SwaggerKey": "students"
+        },
+        {
+            "UpstreamPathTemplate": "/api/students",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST"
+            ],
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5002
+                }
+            ],
+            "DownstreamPathTemplate": "/api/students",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            },
+            "SwaggerKey": "students"
+        },
+        {
+            "UpstreamPathTemplate": "/api/courses",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST"
+            ],
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5001
+                }
+            ],
+            "DownstreamPathTemplate": "/api/courses",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            },
+            "SwaggerKey": "courses"
+        },
+        {
+            "UpstreamPathTemplate": "/api/enrollments",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST"
+            ],
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5001
+                }
+            ],
+            "DownstreamPathTemplate": "/api/enrollments",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer",
+                "AllowedScopes": []
+            },
+            "SwaggerKey": "enrollments"
         }
     ],
     "SwaggerEndPoints": [
@@ -119,5 +179,12 @@
     ],
     "GlobalConfiguration": {
         "BaseUrl": "https://localhost:5000"
+    },
+    "Logging": {
+        "LogLevel": {
+            "Default": "Debug",
+            "System": "Information",
+            "Microsoft": "Information"
+        }
     }
 }

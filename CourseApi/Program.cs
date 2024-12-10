@@ -58,8 +58,6 @@ builder.Services.AddFluentValidationAutoValidation()
     .AddValidatorsFromAssemblyContaining<CreateCourseDto>()
     .AddValidatorsFromAssemblyContaining<UpdateCourseDto>()
     .AddValidatorsFromAssemblyContaining<CreateEnrollmentDto>();
-
-
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers(option =>

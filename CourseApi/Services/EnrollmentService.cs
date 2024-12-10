@@ -10,13 +10,13 @@ namespace CourseApi.Services;
 
 public interface IEnrollmentService
 {
-    Task<ServiceResult<List<EnrollmentDto>?>> GetAllEnrollmentsAsync();
-    Task<ServiceResult<EnrollmentDto?>> GetEnrollmentByIdAsync(int enrollmentId);
+    Task<ServiceResult> GetAllEnrollmentsAsync();
+    Task<ServiceResult> GetEnrollmentByIdAsync(int enrollmentId);
 
-    Task<ServiceResult<List<EnrollmentDto>?>> GetEnrollmentsByCourseIdAsync(string courseId);
-    Task<ServiceResult<List<EnrollmentDto>?>> GetEnrollmentsByStudentIdAsync(int studentId);
-    Task<ServiceResult<EnrollmentDto?>> EnrollStudentInCourseAsync(CreateEnrollmentDto createEnrollmentDto);
-    Task<ServiceResult<bool>> DeleteEnrollmentAsync(int enrollmentId);
+    Task<ServiceResult> GetEnrollmentsByCourseIdAsync(string courseId);
+    Task<ServiceResult> GetEnrollmentsByStudentIdAsync(int studentId);
+    Task<ServiceResult> EnrollStudentInCourseAsync(CreateEnrollmentDto createEnrollmentDto);
+    Task<ServiceResult> DeleteEnrollmentAsync(int enrollmentId);
 }
 public class EnrollmentService : IEnrollmentService
 {
@@ -30,13 +30,13 @@ public class EnrollmentService : IEnrollmentService
         _enrollmentRepository = enrollmentRepository;
         _mapper = mapper;
     }
-    public async Task<ServiceResult<List<EnrollmentDto>?>> GetAllEnrollmentsAsync()
+    public async Task<ServiceResult> GetAllEnrollmentsAsync()
     {
         var enrollments = await _enrollmentRepository.GetAllEnrollmentsAsync();
         if (enrollments == null || enrollments.Count == 0)
         {
             Log.Error("No enrollments found");
-            return new ServiceResult<List<EnrollmentDto>?>(ResultType.NotFound, "No enrollments found");
+            return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
         var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
@@ -53,27 +53,27 @@ public class EnrollmentService : IEnrollmentService
                 {
                     enrollments.ForEach(e => e.Student = apiResponse.Data.FirstOrDefault(s => s.StudentId == e.StudentId));
                 }
-                return new ServiceResult<List<EnrollmentDto>?>(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully");
+                return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully");
             }
             else
             {
                 Log.Error($"Failed to retrieve students from StudentApi: {response.StatusCode}");
-                return new ServiceResult<List<EnrollmentDto>?>(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+                return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
             }
         }
         catch (Exception e)
         {
             Log.Error($"Error retrieving students from StudentApi: {e.Message}");
-            return new ServiceResult<List<EnrollmentDto>?>(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+            return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
         }
     }
-    public async Task<ServiceResult<EnrollmentDto?>> GetEnrollmentByIdAsync(int enrollmentId)
+    public async Task<ServiceResult> GetEnrollmentByIdAsync(int enrollmentId)
     {
         var enrollment = await _enrollmentRepository.GetEnrollmentByIdAsync(enrollmentId);
         if (enrollment == null)
         {
             Log.Error("No enrollments found");
-            return new ServiceResult<EnrollmentDto?>(ResultType.NotFound, "No enrollments found");
+            return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
         try
         {
@@ -88,28 +88,28 @@ public class EnrollmentService : IEnrollmentService
                 {
                     enrollment.Student = apiResponse.Data;
                 }
-                return new ServiceResult<EnrollmentDto?>(_mapper.Map<EnrollmentDto>(enrollment), "Get enrollment by id successfully");
+                return new ServiceResult(_mapper.Map<EnrollmentDto>(enrollment), "Get enrollment by id successfully");
             }
             else
             {
                 Log.Error($"Failed to retrieve student from StudentApi: {response.StatusCode}");
-                return new ServiceResult<EnrollmentDto?>(ResultType.InternalServerError, "Error retrieving student from StudentApi");
+                return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
             }
         }
         catch (Exception e)
         {
             Log.Error($"Error retrieving student from StudentApi: {e.Message}");
-            return new ServiceResult<EnrollmentDto?>(ResultType.InternalServerError, "Error retrieving student from StudentApi");
+            return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
         }
     }
 
-    public async Task<ServiceResult<List<EnrollmentDto>?>> GetEnrollmentsByCourseIdAsync(string courseId)
+    public async Task<ServiceResult> GetEnrollmentsByCourseIdAsync(string courseId)
     {
         var enrollments = await _enrollmentRepository.GetEnrollmentsByCourseIdAsync(courseId);
         if (enrollments == null || enrollments.Count == 0)
         {
             Log.Error("No enrollments found");
-            return new ServiceResult<List<EnrollmentDto>?>(ResultType.NotFound, "No enrollments found");
+            return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
         var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
@@ -125,27 +125,27 @@ public class EnrollmentService : IEnrollmentService
                 {
                     enrollments.ForEach(e => e.Student = apiResponse.Data.FirstOrDefault(s => s.StudentId == e.StudentId));
                 }
-                return new ServiceResult<List<EnrollmentDto>?>(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get enrollments by course id successfully");
+                return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get enrollments by course id successfully");
             }
             else
             {
                 Log.Error($"Failed to retrieve students from StudentApi: {response.StatusCode}");
-                return new ServiceResult<List<EnrollmentDto>?>(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+                return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
             }
         }
         catch (Exception e)
         {
             Log.Error($"Error retrieving students from StudentApi: {e.Message}");
-            return new ServiceResult<List<EnrollmentDto>?>(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+            return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
         }
     }
-    public async Task<ServiceResult<List<EnrollmentDto>?>> GetEnrollmentsByStudentIdAsync(int studentId)
+    public async Task<ServiceResult> GetEnrollmentsByStudentIdAsync(int studentId)
     {
         var enrollments = await _enrollmentRepository.GetEnrollmentsByStudentIdAsync(studentId);
         if (enrollments == null || enrollments.Count == 0)
         {
             Log.Error("No enrollments found");
-            return new ServiceResult<List<EnrollmentDto>?>(ResultType.NotFound, "No enrollments found");
+            return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
         var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
@@ -155,38 +155,39 @@ public class EnrollmentService : IEnrollmentService
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($"Failed to retrieve student with id {studentId} from StudentApi: {response.StatusCode}");
-                return new ServiceResult<List<EnrollmentDto>?>(ResultType.InternalServerError, "Error retrieving student from StudentApi");
+                return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
             }
             var responseContent = await response.Content.ReadAsStringAsync();
             var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent);
             if (apiResponse?.Data == null || apiResponse.Data.StudentId != studentId)
             {
                 Log.Error("Some thing wrong with student info");
-                return new ServiceResult<List<EnrollmentDto>?>(ResultType.InternalServerError, "Some thing wrong with student info");
+                return new ServiceResult(ResultType.InternalServerError, "Some thing wrong with student info");
             }
             var enrollmentsWithStudent = await _enrollmentRepository.GetEnrollmentsByStudentIdAsync(studentId);
             enrollmentsWithStudent.ForEach(e => e.Student = apiResponse.Data);
-            return new ServiceResult<List<EnrollmentDto>?>(_mapper.Map<List<EnrollmentDto>>(enrollmentsWithStudent), "Get enrollments by student id successfully");
+            return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollmentsWithStudent), "Get enrollments by student id successfully");
         }
         catch (Exception e)
         {
             Log.Error($"Error retrieving student from StudentApi: {e.Message}");
-            return new ServiceResult<List<EnrollmentDto>?>(ResultType.InternalServerError, "Error retrieving student from StudentApi");
+            return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
         }
     }
 
-    public async Task<ServiceResult<EnrollmentDto>?> EnrollStudentInCourseAsync(CreateEnrollmentDto createEnrollmentDto)
+    public async Task<ServiceResult> EnrollStudentInCourseAsync(CreateEnrollmentDto createEnrollmentDto)
     {
         var course = await _courseRepository.GetCourseByCourseIdAsync(createEnrollmentDto.CourseId);
         if (course == null)
         {
             Log.Error($"Course with id {createEnrollmentDto.CourseId} not found");
-            return new ServiceResult<EnrollmentDto>(ResultType.NotFound, "Course not found");
+            return new ServiceResult(ResultType.NotFound, "Course not found");
         }
-        if (await _enrollmentRepository.IsStudentEnrolledInCourseAsync(createEnrollmentDto.StudentId, createEnrollmentDto.CourseId))
+        var isEnroll = await _enrollmentRepository.IsStudentEnrolledInCourseAsync(createEnrollmentDto.StudentId, createEnrollmentDto.CourseId);
+        if (isEnroll)
         {
             Log.Error($"Student with id {createEnrollmentDto.StudentId} is already enrolled in course with id {createEnrollmentDto.CourseId}");
-            return new ServiceResult<EnrollmentDto>(ResultType.BadRequest, "Student is already enrolled in the course");
+            return new ServiceResult(ResultType.BadRequest, "Student is already enrolled in the course");
         }
         try
         {
@@ -196,44 +197,44 @@ public class EnrollmentService : IEnrollmentService
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($"Failed to retrieve student with id {createEnrollmentDto.StudentId} from StudentApi: {response.StatusCode}");
-                return new ServiceResult<EnrollmentDto>(ResultType.InternalServerError, "Error retrieving student from StudentApi");
+                return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
             }
             var responseContent = await response.Content.ReadAsStringAsync();
             var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent);
             if (apiResponse?.Data == null || apiResponse.Data.StudentId != createEnrollmentDto.StudentId)
             {
                 Log.Error("Some thing wrong with student info");
-                return new ServiceResult<EnrollmentDto>(ResultType.BadRequest, "Some thing wrong with student info");
+                return new ServiceResult(ResultType.BadRequest, "Some thing wrong with student info");
             }
             var enrollment = _mapper.Map<Enrollment>(createEnrollmentDto);
             var result = await _enrollmentRepository.CreateEnrollmentAsync(enrollment);
             if (result == null)
             {
                 Log.Error("Failed to create enrollment");
-                return new ServiceResult<EnrollmentDto>(ResultType.InternalServerError, "Failed to create enrollment");
+                return new ServiceResult(ResultType.InternalServerError, "Failed to create enrollment");
             }
-            return new ServiceResult<EnrollmentDto>(_mapper.Map<EnrollmentDto>(enrollment), "Enroll student in course successfully");
+            return new ServiceResult(_mapper.Map<EnrollmentDto>(enrollment), "Enroll student in course successfully");
         }
         catch (Exception e)
         {
             Log.Error($"Error retrieving students from StudentApi: {e.Message}");
-            return null;
+            return new ServiceResult(ResultType.InternalServerError, "Failed to create enrollment");
         }
     }
-    public async Task<ServiceResult<bool>> DeleteEnrollmentAsync(int enrollmentId)
+    public async Task<ServiceResult> DeleteEnrollmentAsync(int enrollmentId)
     {
         var enrollment = await _enrollmentRepository.GetEnrollmentByIdAsync(enrollmentId);
         if (enrollment == null)
         {
             Log.Error($"Enrollment with id {enrollmentId} not found");
-            return new ServiceResult<bool>(ResultType.NotFound, "Enrollment not found");
+            return new ServiceResult(ResultType.NotFound, "Enrollment not found");
         }
         var result = await _enrollmentRepository.DeleteEnrollmentAsync(enrollment);
         if (!result)
         {
             Log.Error("Failed to delete enrollment");
-            return new ServiceResult<bool>(ResultType.InternalServerError, "Failed to delete enrollment");
+            return new ServiceResult(ResultType.InternalServerError, "Failed to delete enrollment");
         }
-        return new ServiceResult<bool>(true, "Delete enrollment successfully");
+        return new ServiceResult(true, "Delete enrollment successfully");
     }
 }

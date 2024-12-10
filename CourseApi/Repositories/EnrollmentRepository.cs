@@ -52,7 +52,7 @@ public class EnrollmentRepository : IEnrollmentRepository
 
     public async Task<List<Enrollment>?> GetEnrollmentsByStudentIdAsync(int studentId)
     {
-        return await _context.Enrollments.Include(e => e.Course).Where(e => e.StudentId == studentId    ).ToListAsync();
+        return await _context.Enrollments.Include(e => e.Course).Where(e => e.StudentId == studentId).ToListAsync();
     }
 
     public async Task<Enrollment?> GetEnrollmentByIdAsync(int enrollmentId)
@@ -60,8 +60,8 @@ public class EnrollmentRepository : IEnrollmentRepository
         return await _context.Enrollments.Include(e => e.Course).FirstOrDefaultAsync(e => e.EnrollmentId == enrollmentId);
     }
 
-    public Task<bool> IsStudentEnrolledInCourseAsync(int enrollmentId, string courseId)
+    public Task<bool> IsStudentEnrolledInCourseAsync(int studentId, string courseId)
     {
-        return _context.Enrollments.AnyAsync(e => e.EnrollmentId == enrollmentId && e.CourseId == courseId.ToUpper());
+        return _context.Enrollments.AnyAsync(e => e.StudentId == studentId && e.CourseId == courseId.ToUpper());
     }
 }

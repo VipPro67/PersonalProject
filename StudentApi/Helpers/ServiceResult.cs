@@ -9,14 +9,14 @@ public enum ResultType
     Unauthorized,
     InternalServerError
 }
-public class ServiceResult<T>
+public class ServiceResult
 {
     public ResultType Type { get; set; }
     public string? Message { get; set; }
-    public T? Data { get; set; }
+    public Object? Data { get; set; }
 
 
-    public ServiceResult(T? data, string message)
+    public ServiceResult(Object? data, string message)
     {
         Type = ResultType.Ok;
         Message = message;

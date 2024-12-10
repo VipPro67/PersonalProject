@@ -14,9 +14,11 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageReference Include="MMLib.SwaggerForOcelot" Version="8.3.2" />
-    <PackageReference Include="Ocelot" Version="23.4.1" />
+    <PackageReference Include="Ocelot" Version="20.0.0" />
+    <PackageReference Include="Ocelot.Cache.CacheManager" Version="19.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
+
 
   <ItemGroup>
     <Folder Include="Migrations\" />
