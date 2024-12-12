@@ -65,12 +65,23 @@ public class RefreshTokenRepositoryTest
     }
 
     [Fact]
-    public async Task RemoveRefreshTokenAsync_ShouldRemoveRefreshToken()
+    public async Task RemoveRefreshTokenAsync_ValidToken_True()
     {
         var context = await CreateContextAndSeedDatabase();
         var repository = await CreateRefreshTokenRepositoryWithSeededData(context);
         var result = await repository.RemoveRefreshTokenAsync("test1");
 
+        result.Should().BeTrue();
+    }
+
+    
+
+    [Fact]
+    public async Task RemoveAllRefreshTokensByUserIdAsync_ValidUserId_True()
+    {
+        var context = await CreateContextAndSeedDatabase();
+        var repository = await CreateRefreshTokenRepositoryWithSeededData(context);
+        var result = await repository.RemoveAllRefreshTokensByUserIdAsync(1);
         result.Should().BeTrue();
     }
 

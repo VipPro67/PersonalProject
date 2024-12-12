@@ -51,6 +51,85 @@ public class UserRepositoryTest
         savedUser.Email.Should().Be("newuser@example.com");
         context.Users.Count().Should().Be(4);
     }
+
+    public async Task CreateAppUserAsync_InvalidEmail_Null()
+    {
+        var context = await CreateContextAndSeedDatabase();
+        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var newUser = new AppUser
+        {
+            UserName = "newuser",
+            PasswordHash = "new_thing_hash",
+            Email = null,
+            Address = "987 Maple St",
+            FullName = "New User"
+        };
+
+        Func<Task> act = async () => { await userRepository.CreateAppUserAsync(newUser); };
+
+        await act.Should().ThrowAsync<DbUpdateException>()
+            .WithMessage("Required properties 'Email' are missing for the instance of entity type 'AppUser'.");
+    }
+
+
+    [Fact]
+    public async Task UpdateAppUserAsync_ValidUser_User()
+    {
+        // Arrange
+        var context = await CreateContextAndSeedDatabase();
+        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var existingUser = await context.Users.FindAsync(1);
+        existingUser.UserName = "updateduser";
+        existingUser.PasswordHash = "updated_thing_hash";
+        existingUser.Email = "updateduser@example.com";
+        existingUser.Address = "654 Pine St";
+        existingUser.FullName = "Updated User";
+
+        // Act
+        var savedUser = await userRepository.UpdateAppUserAsync(existingUser);
+
+        // Assert
+        savedUser.Should().NotBeNull();
+        savedUser?.Email.Should().Be("updateduser@example.com");
+        context.Users.Count().Should().Be(3);
+    }
+
+    [Fact]
+    public async Task DeleteAppUserAsync_ExistentUserId()
+    {
+        // Arrange
+        var context = await CreateContextAndSeedDatabase();
+        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var appUser = await context.Users.FindAsync(1);
+
+        // Act
+        await userRepository.DeleteAppUserAsync(appUser);
+
+        // Assert
+        context.Users.Count().Should().Be(2);
+    }
+
+    [Fact]
+    public async Task DeleteAppUserAsync_NonExistentUserId()
+    {
+        var context = await CreateContextAndSeedDatabase();
+        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var appUser = new AppUser { UserId = -1, UserName = "nonexistentuser", PasswordHash = "nonexistent_thing_hash", Email = "nonexistentuser@example.com", Address = "999 Oak St", FullName = "Nonexistent User" };
+        
+        userRepository.DeleteAppUserAsync(appUser);
+
+        context.Users.Count().Should().Be(3);
+    }
+    [Fact]
+    public async Task UpdateAppUserAsync_InvalidEmail_Null()
+    {
+        var context = await CreateContextAndSeedDatabase();
+        var userRepository = await CreateUserRepositoryWithSeededData(context);
+
+        var updatedUser = new AppUser { UserId = 1, UserName = "updateduser", PasswordHash = "updated_thing_hash", Email = null, Address = "654 Pine St", FullName = "Updated User" };
+        Func<Task> act = async () => { await userRepository.CreateAppUserAsync(updatedUser); };
+        await act.Should().ThrowAsync<InvalidOperationException>();
+    }
     [Fact]
     public async Task GetAppUserByIdAsync_ExistentUserId_User()
     {

@@ -6,6 +6,7 @@ using AuthApi.Services;
 using AuthApi.Validators;
 using FluentAssertions;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -161,7 +162,7 @@ public class AuthControllerTest
     }
 
     [Fact]
-    public async Task RefreshToken_WithValidToken_ReturnsOkResult()
+    public async Task RefreshToken_WithValidToken_OkResult()
     {
         // Arrange
         var refreshTokenDto = new RefreshTokenDto
@@ -194,7 +195,7 @@ public class AuthControllerTest
     }
 
     [Fact]
-    public async Task RefreshToken_WithInvalidToken_ReturnsUnauthorizedResult()
+    public async Task RefreshToken_WithInvalidToken_UnauthorizedResult()
     {
         // Arrange
         var refreshTokenDto = new RefreshTokenDto
@@ -218,5 +219,59 @@ public class AuthControllerTest
         response.Status.Should().Be(401);
         response.Message.Should().Be("Refresh token failed.");
         response.Error.Should().Be("The refresh token is invalid or has expired");
+    }
+
+    [Fact]
+    public async Task LogoutAll_ValidUserId_OkResult()
+    {
+        // Arrange 
+        var userId = "1";
+        _mockAuthService.Setup(s => s.LogoutAll(int.Parse(userId))).ReturnsAsync(true);
+        _mockLocalization.Setup(l => l[ResourceKey.LogoutSuccessful]).Returns(new LocalizedString(ResourceKey.LogoutSuccessful, "Logout successful."));
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        _controller.ControllerContext.HttpContext.Request.Headers["X-UserId"] = userId;
+        // Act 
+        var result = await _controller.LogoutAll();
+        // Assert 
+        result.Should().BeOfType<OkObjectResult>();
+        var okResult = (OkObjectResult)result;
+        var response = okResult.Value.Should().BeOfType<SuccessResponse>().Subject;
+        response.Status.Should().Be(200); response.Message.Should().Be("Logout successful.");
+        response.Data.Should().BeNull();
+        // Assuming that the success response data is null 
+    }
+    [Fact]
+    public async Task LogoutAll_NoUserId_UnauthorizedResult()
+    {
+        // Arrange 
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        _mockLocalization.Setup(l => l[ResourceKey.UserUnauthenticated]).Returns(new LocalizedString(ResourceKey.UserUnauthenticated, "User is not authenticated."));
+
+        // Act 
+        var result = await _controller.LogoutAll();
+        // Assert 
+        result.Should().BeOfType<UnauthorizedObjectResult>();
+        var unauthorizedResult = (UnauthorizedObjectResult)result;
+        var response = unauthorizedResult.Value.Should().BeOfType<ErrorResponse>().Subject;
+        response.Status.Should().Be(401);
+        response.Message.Should().Be("User is not authenticated.");
+    }
+    [Fact]
+    public async Task LogoutAll_LogoutFailed_BadRequestResult()
+    {
+        // Arrange 
+        var userId = "1";
+        _mockAuthService.Setup(s => s.LogoutAll(int.Parse(userId))).ReturnsAsync(false);
+        _mockLocalization.Setup(l => l[ResourceKey.LogoutFailed]).Returns(new LocalizedString(ResourceKey.LogoutFailed, "Logout failed."));
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+        _controller.ControllerContext.HttpContext.Request.Headers["X-UserId"] = userId;
+        // Act 
+        var result = await _controller.LogoutAll();
+        // Assert 
+        result.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestResult = (BadRequestObjectResult)result;
+        var response = badRequestResult.Value.Should().BeOfType<ErrorResponse>().Subject;
+        response.Status.Should().Be(400);
+        response.Message.Should().Be("Logout failed.");
     }
 }
