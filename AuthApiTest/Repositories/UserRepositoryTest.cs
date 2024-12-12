@@ -146,9 +146,6 @@ public class UserRepositoryTest
         result.FullName.Should().Be("Test User");
 
     }
-
-    // Repeat the same pattern for other test methods
-
     [Fact]
     public async Task GetAppUserByIdAsync_NonExistentUserId_Null()
     {

@@ -12,7 +12,7 @@ public class CreateStudentDtoValidator : AbstractValidator<CreateStudentDto>
             .MaximumLength(100).WithMessage("Email should not exceed 100 characters");
 
         RuleFor(x => x.FullName)
-            .NotEmpty().WithMessage(" FullName is required")
+            .NotEmpty().WithMessage("FullName is required")
             .MaximumLength(100).WithMessage("FullName should not exceed 100 characters");
 
         RuleFor(x => x.PhoneNumber)

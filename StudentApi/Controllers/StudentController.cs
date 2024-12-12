@@ -50,7 +50,7 @@ namespace StudentApi.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStudentAsync(int id, [FromBody] UpdateStudentDto updateStudentDto)
         {
-            var result = await _studentService.GetStudentByIdAsync(id);
+            var result = await _studentService.UpdateStudentAsync(id, updateStudentDto);
             return this.ToActionResult(result);
         }
 

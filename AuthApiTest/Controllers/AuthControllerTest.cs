@@ -238,7 +238,6 @@ public class AuthControllerTest
         var response = okResult.Value.Should().BeOfType<SuccessResponse>().Subject;
         response.Status.Should().Be(200); response.Message.Should().Be("Logout successful.");
         response.Data.Should().BeNull();
-        // Assuming that the success response data is null 
     }
     [Fact]
     public async Task LogoutAll_NoUserId_UnauthorizedResult()
