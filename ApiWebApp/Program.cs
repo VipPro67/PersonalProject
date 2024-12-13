@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
     .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
-builder.Services.AddOcelot(builder.Configuration).AddCacheManager(x=>x.WithDictionaryHandle());
+builder.Services.AddOcelot(builder.Configuration).AddCacheManager(x => x.WithDictionaryHandle());
 // Add CORS
 builder.Services.AddControllers();
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
@@ -45,6 +45,7 @@ builder.Services.AddSwaggerForOcelot(builder.Configuration);
 var app = builder.Build();
 
 app.UseRouting();
+app.UseGlobalExceptionHandling();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAuthHeaderMiddleware();
@@ -53,7 +54,6 @@ app.UseSwaggerForOcelotUI(opt =>
 {
     opt.PathToSwaggerGenerator = "/swagger/docs";
 });
-app.UseGlobalExceptionHandling();
 app.UseCustomMiddleware();
 app.UseOcelot().Wait();
 app.Run();

@@ -1,3 +1,4 @@
+using System.Net;
 using AutoMapper;
 using Newtonsoft.Json;
 using Serilog;
@@ -43,7 +44,7 @@ public class StudentService : IStudentService
         var result = await _studentRepository.CreateStudentAsync(_mapper.Map<Student>(createStudentDto));
         return new ServiceResult(_mapper.Map<StudentDto>(result), "Create student successfully");
     }
-    public async Task<ServiceResult> DeleteStudentAsync(int studentId)
+     public async Task<ServiceResult> DeleteStudentAsync(int studentId)
     {
         var student = await _studentRepository.GetStudentByIdAsync(studentId);
         if (student == null)
@@ -56,25 +57,22 @@ public class StudentService : IStudentService
             var courseApiUrl = Environment.GetEnvironmentVariable("CourseApiUrl");
             var courseApiClient = CreateHttpClient();
             var response = await courseApiClient.GetAsync($"api/enrollments/students/{studentId}");
-            if (!response.IsSuccessStatusCode)
+            if (response.StatusCode == HttpStatusCode.NotFound)
             {
-                Log.Error($"Failed to retrieve enrollments with studentId {studentId} from CourseApi: {response.StatusCode}");
-                return new ServiceResult(ResultType.BadRequest, "Failed to retrieve enrollments from CourseApi");
+                Log.Information($"No enrollments found for student id {studentId}");
+                await _studentRepository.DeleteStudentAsync(student);
+                return new ServiceResult(ResultType.Ok, "Delete student successfully");
             }
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<EnrollmentDto>>>(responseContent);
-            if (apiResponse.Data.Any(e => e.StudentId == studentId))
+            else if (response.IsSuccessStatusCode)
             {
-                Log.Error($"Delete student with id {studentId} failed. Student are in course");
-                return new ServiceResult(ResultType.BadRequest, "Student are in course");
+                Log.Error($"Delete student with id {studentId} failed. Student has enrollments");
+                return new ServiceResult(ResultType.BadRequest, "Student has enrollments");
             }
-            var result = await _studentRepository.DeleteStudentAsync(student);
-            if (!result)
+            else
             {
-                Log.Error($"Delete student with id {studentId} failed.");
-                return new ServiceResult(ResultType.InternalServerError, "Failed to delete student from CourseApi");
+                Log.Error($"Failed to delete student with id {studentId} from CourseApi: {response.StatusCode}");
+                return new ServiceResult(ResultType.InternalServerError, "Error deleting student from CourseApi");
             }
-            return new ServiceResult(ResultType.Ok, "Delete student successfully");
         }
         catch (Exception e)
         {

@@ -103,19 +103,13 @@ public class StudentServiceTests
         // Arrange
         int studentId = 1;
         var student = new Student { StudentId = studentId };
-        var enrollments = new ApiResponse<List<EnrollmentDto>>
-        {
-            Data = new List<EnrollmentDto>
-             { new EnrollmentDto { StudentId = 2 } }
-        };
         Environment.SetEnvironmentVariable("CourseApiUrl", "https://localhost:5001");
         _mockStudentRepository.Setup(repo => repo.GetStudentByIdAsync(studentId)).ReturnsAsync(student);
         _mockHttpMessageHandler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync",
          ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
          .ReturnsAsync(new HttpResponseMessage
          {
-             StatusCode = HttpStatusCode.OK,
-             Content = new StringContent(JsonConvert.SerializeObject(enrollments))
+             StatusCode = HttpStatusCode.NotFound,
          });
         _mockStudentRepository.Setup(repo => repo.DeleteStudentAsync(student)).ReturnsAsync(true);
 
@@ -168,7 +162,7 @@ public class StudentServiceTests
         // Assert 
         result.Should().NotBeNull();
         result.Type.Should().Be(ResultType.BadRequest);
-        result.Message.Should().Be("Student are in course");
+        result.Message.Should().Be("Student has enrollments");
     }
 
 

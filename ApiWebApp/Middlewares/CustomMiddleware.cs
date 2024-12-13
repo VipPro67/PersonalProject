@@ -26,12 +26,6 @@ public class CustomMiddleware
             var response = new ErrorResponse(403, "Forbidden: You do not have permission to access this resource", null);
             await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
         }
-        else if (context.Response.StatusCode == 404)
-        {
-            context.Response.ContentType = "application/json";
-            var response = new ErrorResponse(404, "Not Found: The requested resource was not found", null);
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
-        }
         else if (context.Response.StatusCode == 405)
         {
             context.Response.ContentType = "application/json";
@@ -44,7 +38,6 @@ public class CustomMiddleware
             var response = new ErrorResponse(415, "Unsupported Media Type", null);
             await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
         }
-
         else if (context.Response.StatusCode == 502)
         {
             context.Response.ContentType = "application/json";
