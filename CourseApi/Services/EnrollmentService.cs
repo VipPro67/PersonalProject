@@ -30,6 +30,11 @@ public class EnrollmentService : IEnrollmentService
         _enrollmentRepository = enrollmentRepository;
         _mapper = mapper;
     }
+    public virtual HttpClient CreateHttpClient()
+    {
+        var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
+        return new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+    }
     public async Task<ServiceResult> GetAllEnrollmentsAsync()
     {
         var enrollments = await _enrollmentRepository.GetAllEnrollmentsAsync();
@@ -39,7 +44,7 @@ public class EnrollmentService : IEnrollmentService
             return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+        var studentApiClient = CreateHttpClient();
         var ids = enrollments.Select(e => e.StudentId).Distinct().ToList();
         try
         {
@@ -78,7 +83,7 @@ public class EnrollmentService : IEnrollmentService
         try
         {
             var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-            var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+            var studentApiClient = CreateHttpClient();
             var response = await studentApiClient.GetAsync($"api/students/{enrollment.StudentId}");
             if (response.IsSuccessStatusCode)
             {
@@ -112,7 +117,7 @@ public class EnrollmentService : IEnrollmentService
             return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+        var studentApiClient = CreateHttpClient();
         var ids = enrollments.Select(e => e.StudentId).Distinct().ToList();
         try
         {
@@ -148,7 +153,7 @@ public class EnrollmentService : IEnrollmentService
             return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+        var studentApiClient = CreateHttpClient();
         try
         {
             var response = await studentApiClient.GetAsync($"api/students/{studentId}");
@@ -192,7 +197,7 @@ public class EnrollmentService : IEnrollmentService
         try
         {
             var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-            var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+            var studentApiClient = CreateHttpClient();
             var response = await studentApiClient.GetAsync($"api/students/{createEnrollmentDto.StudentId}");
             if (!response.IsSuccessStatusCode)
             {

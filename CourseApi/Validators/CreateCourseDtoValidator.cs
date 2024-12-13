@@ -29,7 +29,7 @@ public class CreateCourseDtoValidator : AbstractValidator<CreateCourseDto>
             .LessThanOrEqualTo(10).WithMessage("Credit should be less than or equal to 10");
 
         RuleFor(x => x.Department)
-            .NotEmpty().WithMessage("DepartmentName is required")
+            .NotEmpty().WithMessage("Department is required")
             .MaximumLength(50).WithMessage("DepartmentName should not exceed 50 characters")
             .Matches("^[A-Za-z ]+$").WithMessage("DepartmentName should only contain alphabetic characters");
 
@@ -44,6 +44,10 @@ public class CreateCourseDtoValidator : AbstractValidator<CreateCourseDto>
 
         RuleFor(x => x.EndDate)
             .NotEmpty().WithMessage("EndDate is required");
+        
+        RuleFor(x => x.Schedule)
+            .NotEmpty().WithMessage("Schedule is required")
+            .MaximumLength(100).WithMessage("Schedule should not exceed 100 characters");
     }
 
 }

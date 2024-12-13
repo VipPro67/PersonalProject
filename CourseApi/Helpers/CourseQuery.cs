@@ -2,7 +2,7 @@ namespace CourseApi.Helpers;
 public class CourseQuery
 {
     public string? CourseId { get; set; } = null;
-    public string? CourseName { get; } = null;
+    public string? CourseName { get; set;} = null;
     public string? Instructor { get; set; } = null;
     public string? Department { get; set; } = null;
     

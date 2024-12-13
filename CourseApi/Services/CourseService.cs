@@ -29,6 +29,16 @@ public class CourseService : ICourseService
         _enrollmentRepository = enrollmentRepository;
         _mapper = mapper;
     }
+    public virtual HttpClient CreateHttpClient()
+    {
+        var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
+        if (string.IsNullOrEmpty(studentApiUrl))
+        {
+            Log.Error("StudentApiUrl environment variable is not set or empty");
+            return null;
+        }
+        return new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+    }
 
     public async Task<ServiceResult> GetCoursesAsync(CourseQuery query)
     {
@@ -105,9 +115,8 @@ public class CourseService : ICourseService
             return new ServiceResult(ResultType.NotFound, "No enrollment found");
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        var studentApiClient = new HttpClient { BaseAddress = new Uri(studentApiUrl) };
+        var studentApiClient = CreateHttpClient();
         var ids = enrollments.Select(x => x.StudentId).ToList();
-
         try
         {
             var response = await studentApiClient.GetAsync($"api/students/ids?ids={string.Join("&ids=", ids)}");
