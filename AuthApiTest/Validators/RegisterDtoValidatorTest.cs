@@ -1,14 +1,10 @@
 using AuthApi.DTOs;
-using AuthApi.Helpers;
 using AuthApi.Resources;
 using AuthApi.Validators;
-using FluentAssertions;
 using FluentValidation.TestHelper;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Moq;
-using Xunit;
 
 namespace AuthApiTest.Validators;
 public class RegisterDtoValidatorTest

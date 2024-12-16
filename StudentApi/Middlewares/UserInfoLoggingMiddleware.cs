@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Http;
-using Serilog;
 using Serilog.Context;
-using System.Threading.Tasks;
 
 namespace StudentApi.Middlewares;
 public class UserInfoLoggingMiddleware

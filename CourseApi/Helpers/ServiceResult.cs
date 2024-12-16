@@ -1,5 +1,3 @@
-using CourseApi.Models;
-
 namespace CourseApi.Helpers;
 public enum ResultType
 {

@@ -1,11 +1,7 @@
-using AuthApi.Models;
 using AuthApi.Repositories;
 using AuthApi.Data;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace AuthApiTest.Repositories;
 public class RefreshTokenRepositoryTest

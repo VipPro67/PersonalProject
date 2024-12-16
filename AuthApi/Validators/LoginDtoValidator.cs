@@ -2,7 +2,6 @@ using FluentValidation;
 using AuthApi.DTOs;
 using AuthApi.Resources;
 using Microsoft.Extensions.Localization;
-using AuthApi.Helpers;
 
 namespace AuthApi.Validators;
 

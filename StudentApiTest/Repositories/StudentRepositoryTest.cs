@@ -1,12 +1,8 @@
-using System;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using StudentApi.Data;
 using StudentApi.Models;
 using StudentApi.Repositories;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 using StudentApi.Helpers;
 
 namespace StudentApiTest.Repositories;
@@ -154,7 +150,7 @@ public class StudentRepositoryTest
             await repository.DeleteStudentAsync(student);
         };
 
-        await result.Should().ThrowExactlyAsync<Exception>();
+        await result.Should().ThrowExactlyAsync<DbUpdateConcurrencyException>();
         context.Students.Count().Should().Be(3);
     }
 

@@ -1,14 +1,8 @@
-﻿using System.Security.Claims;
-using AutoMapper;
-using CourseApi.DTOs;
+﻿using CourseApi.DTOs;
 using CourseApi.Helpers;
-using CourseApi.Models;
 using CourseApi.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
 
 namespace CourseApi.Controllers
 {

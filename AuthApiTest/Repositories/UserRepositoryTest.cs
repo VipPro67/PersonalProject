@@ -3,9 +3,6 @@ using AuthApi.Repositories;
 using AuthApi.Data;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace AuthApiTest.Repositories;
 public class UserRepositoryTest
@@ -112,12 +109,17 @@ public class UserRepositoryTest
     [Fact]
     public async Task DeleteAppUserAsync_NonExistentUserId()
     {
+        // Arrange
         var context = await CreateContextAndSeedDatabase();
         var userRepository = CreateUserRepositoryWithSeededData(context);
         var appUser = new AppUser { UserId = -1, UserName = "nonexistentuser", PasswordHash = "nonexistent_thing_hash", Email = "nonexistentuser@example.com", Address = "999 Oak St", FullName = "Nonexistent User" };
+        //Act
+        var result = async () =>
+        {
+            await userRepository.DeleteAppUserAsync(appUser);
+        };
 
-        await userRepository.DeleteAppUserAsync(appUser);
-
+        await result.Should().ThrowExactlyAsync<DbUpdateConcurrencyException>();
         context.Users.Count().Should().Be(3);
     }
     [Fact]

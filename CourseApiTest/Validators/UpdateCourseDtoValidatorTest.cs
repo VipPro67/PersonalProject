@@ -1,5 +1,3 @@
-using System;
-using FluentAssertions;
 using FluentValidation.TestHelper;
 using CourseApi.DTOs;
 using CourseApi.Validators;

@@ -1,6 +1,5 @@
 using System.Net;
 using AutoMapper;
-using Newtonsoft.Json;
 using Serilog;
 using StudentApi.DTOs;
 using StudentApi.Helpers;

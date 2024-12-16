@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using CourseApi.Helpers;
 
 namespace CourseApi.Helpers
 {

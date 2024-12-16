@@ -1,6 +1,4 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
-
 public class AuthHeaderMiddleware
 {
     private readonly RequestDelegate _next;

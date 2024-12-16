@@ -1,4 +1,3 @@
-using AutoMapper;
 using CourseApi.Controllers;
 using CourseApi.DTOs;
 using CourseApi.Helpers;
@@ -6,7 +5,6 @@ using CourseApi.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using Xunit;
 
 namespace CourseApiTest.Controllers;
 

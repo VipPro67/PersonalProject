@@ -1,14 +1,10 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using StudentApi.Controllers;
 using StudentApi.DTOs;
 using StudentApi.Helpers;
 using StudentApi.Services;
-using Xunit;
 using FluentAssertions;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace StudentApiTest.Controllers;
 public class StudentControllerTests

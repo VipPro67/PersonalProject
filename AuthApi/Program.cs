@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 using FluentValidation;
 using AuthApi.Validators;
 using FluentValidation.AspNetCore;
@@ -25,9 +24,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Serilog configuration
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
-
-
-
 // Add services to the container and configure them
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(/* Swagger configuration */);

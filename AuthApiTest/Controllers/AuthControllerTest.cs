@@ -3,14 +3,11 @@ using AuthApi.DTOs;
 using AuthApi.Helpers;
 using AuthApi.Resources;
 using AuthApi.Services;
-using AuthApi.Validators;
 using FluentAssertions;
-using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Moq;
-using Xunit;
 
 namespace AuthApiTest.Controllers;
 public class AuthControllerTest

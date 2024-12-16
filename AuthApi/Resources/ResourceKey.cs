@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace AuthApi.Resources;
-
 public static class ResourceKey
 {
     public static readonly string LogoutSuccessful = "LogoutSuccessful";

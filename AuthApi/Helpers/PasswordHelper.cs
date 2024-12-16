@@ -1,5 +1,3 @@
-using BCrypt.Net;
-
 namespace AuthApi.Helpers;
 
 public class PasswordHelper
