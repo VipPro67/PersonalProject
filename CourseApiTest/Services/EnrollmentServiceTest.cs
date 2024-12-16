@@ -177,15 +177,16 @@ public class EnrollmentServiceTests
         result.Message.Should().Be("Student is already enrolled in the course");
     }
 
-    [Fact]
-    public async Task EnrollStudentInCourseAsync_Success()
+
+     [Fact]
+    public async Task EnrollStudentInCourseAsync_ConnectStudentServiceFailed_InternalServerError()
     {
         // Arrange
         var createEnrollmentDto = new CreateEnrollmentDto { StudentId = 1, CourseId = "C001" };
         _mockCourseRepository.Setup(r => r.GetCourseByCourseIdAsync(createEnrollmentDto.CourseId))
-                             .ReturnsAsync(new Course { CourseId = "C001", CourseName = "Test Course" });
+        .ReturnsAsync(new Course { CourseId = "C001", CourseName = "Test Course" });
         _mockEnrollmentRepository.Setup(r => r.IsStudentEnrolledInCourseAsync(createEnrollmentDto.StudentId, createEnrollmentDto.CourseId))
-                                 .ReturnsAsync(false);
+            .ReturnsAsync(false);
 
         var studentApiResponse = new ApiResponse<Student>()
         {
@@ -193,18 +194,56 @@ public class EnrollmentServiceTests
         };
 
         _mockHttpMessageHandler.Protected()
-                               .Setup<Task<HttpResponseMessage>>(
-                                   "SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                               .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-                               {
-                                   Content = new StringContent(JsonConvert.SerializeObject(studentApiResponse))
-                               });
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                StatusCode = HttpStatusCode.InternalServerError
+            });
 
         _mockMapper.Setup(m => m.Map<Enrollment>(It.IsAny<CreateEnrollmentDto>()))
-                   .Returns(new Enrollment { StudentId = 1, CourseId = "C001" });
+            .Returns(new Enrollment { StudentId = 1, CourseId = "C001" });
 
         _mockEnrollmentRepository.Setup(r => r.CreateEnrollmentAsync(It.IsAny<Enrollment>()))
-                                 .ReturnsAsync(new Enrollment { EnrollmentId = 1, StudentId = 1, CourseId = "C001" });
+            .ReturnsAsync(new Enrollment { EnrollmentId = 1, StudentId = 1, CourseId = "C001" });
+
+        // Act
+        var result = await _mockEnrollmentService.Object.EnrollStudentInCourseAsync(createEnrollmentDto);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Type.Should().Be(ResultType.InternalServerError);
+        result.Message.Should().Be("Error retrieving student from StudentApi");
+    }
+
+    [Fact]
+    public async Task EnrollStudentInCourseAsync_Success()
+    {
+        // Arrange
+        var createEnrollmentDto = new CreateEnrollmentDto { StudentId = 1, CourseId = "C001" };
+        _mockCourseRepository.Setup(r => r.GetCourseByCourseIdAsync(createEnrollmentDto.CourseId))
+        .ReturnsAsync(new Course { CourseId = "C001", CourseName = "Test Course" });
+        _mockEnrollmentRepository.Setup(r => r.IsStudentEnrolledInCourseAsync(createEnrollmentDto.StudentId, createEnrollmentDto.CourseId))
+            .ReturnsAsync(false);
+
+        var studentApiResponse = new ApiResponse<Student>()
+        {
+            Data = new Student { StudentId = 1, FullName = "John Doe" }
+        };
+
+        _mockHttpMessageHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(JsonConvert.SerializeObject(studentApiResponse))
+            });
+
+        _mockMapper.Setup(m => m.Map<Enrollment>(It.IsAny<CreateEnrollmentDto>()))
+            .Returns(new Enrollment { StudentId = 1, CourseId = "C001" });
+
+        _mockEnrollmentRepository.Setup(r => r.CreateEnrollmentAsync(It.IsAny<Enrollment>()))
+            .ReturnsAsync(new Enrollment { EnrollmentId = 1, StudentId = 1, CourseId = "C001" });
 
         // Act
         var result = await _mockEnrollmentService.Object.EnrollStudentInCourseAsync(createEnrollmentDto);
@@ -238,9 +277,9 @@ public class EnrollmentServiceTests
         var enrollmentId = 1;
         var enrollment = new Enrollment { EnrollmentId = enrollmentId, StudentId = 1, CourseId = "C001" };
         _mockEnrollmentRepository.Setup(r => r.GetEnrollmentByIdAsync(enrollmentId))
-                                 .ReturnsAsync(enrollment);
+            .ReturnsAsync(enrollment);
         _mockEnrollmentRepository.Setup(r => r.DeleteEnrollmentAsync(enrollment))
-                                 .ReturnsAsync(true);
+            .ReturnsAsync(true);
 
         // Act
         var result = await _enrollmentService.DeleteEnrollmentAsync(enrollmentId);

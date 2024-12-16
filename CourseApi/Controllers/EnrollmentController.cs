@@ -4,12 +4,14 @@ using CourseApi.Helpers;
 using CourseApi.Models;
 using CourseApi.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CourseApi.Controllers;
 [Route("api/enrollments")]
 [ApiController]
-//[Authorize]
+    [EnableCors("AllowCors")]
+
 public class EnrollmentController : ControllerBase
 {
     private readonly IEnrollmentService _enrollmentService;

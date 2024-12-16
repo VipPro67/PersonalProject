@@ -52,6 +52,7 @@ public class UserRepositoryTest
         context.Users.Count().Should().Be(4);
     }
 
+    [Fact]
     public async Task CreateAppUserAsync_InvalidEmail_Null()
     {
         var context = await CreateContextAndSeedDatabase();
@@ -115,7 +116,7 @@ public class UserRepositoryTest
         var context = await CreateContextAndSeedDatabase();
         var userRepository = await CreateUserRepositoryWithSeededData(context);
         var appUser = new AppUser { UserId = -1, UserName = "nonexistentuser", PasswordHash = "nonexistent_thing_hash", Email = "nonexistentuser@example.com", Address = "999 Oak St", FullName = "Nonexistent User" };
-        
+
         userRepository.DeleteAppUserAsync(appUser);
 
         context.Users.Count().Should().Be(3);

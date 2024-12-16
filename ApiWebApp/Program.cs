@@ -44,7 +44,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddSwaggerForOcelot(builder.Configuration);
 var app = builder.Build();
 
-app.UseRouting();
+app.UseRouting(); 
+app.UseCustomMiddleware();
 app.UseGlobalExceptionHandling();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -54,6 +55,6 @@ app.UseSwaggerForOcelotUI(opt =>
 {
     opt.PathToSwaggerGenerator = "/swagger/docs";
 });
-app.UseCustomMiddleware();
+
 app.UseOcelot().Wait();
 app.Run();

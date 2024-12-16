@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using StudentApi.DTOs;
 using StudentApi.Helpers;
@@ -9,7 +10,8 @@ namespace StudentApi.Controllers
 {
     [Route("api/students")]
     [ApiController]
-    //[Authorize]
+        [EnableCors("AllowCors")]
+
     public class StudentController : ControllerBase
     {
         private readonly IStudentService _studentService;

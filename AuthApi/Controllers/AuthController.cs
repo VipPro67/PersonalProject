@@ -2,7 +2,7 @@
 using AuthApi.Helpers;
 using AuthApi.Resources;
 using AuthApi.Services;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Serilog;
@@ -11,6 +11,8 @@ namespace AuthApi.Controllers
 {
     [Route("api/auth")]
     [ApiController]
+    [EnableCors("AllowAPIGateWay")]
+
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;

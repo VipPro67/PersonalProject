@@ -14,7 +14,7 @@ namespace CourseApi.Controllers
 {
     [Route("api/courses")]
     [ApiController]
-    [EnableCors]
+    [EnableCors("AllowCors")]
 
     //[Authorize]
     public class CourseController : ControllerBase
