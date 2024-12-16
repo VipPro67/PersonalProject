@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
      <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
-     <NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625</NoWarn>
+     <NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625;CS8604;NETSDK1138;CS8618</NoWarn>
     <EmbeddedResourceUseDependentUponConvention>true</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>
 

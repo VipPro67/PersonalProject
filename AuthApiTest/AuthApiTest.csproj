@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
      <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
-<NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625</NoWarn>    <IsPackable>false</IsPackable>
+<NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625;CS8604;NETSDK1138</NoWarn>    <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 

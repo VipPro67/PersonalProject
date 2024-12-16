@@ -5,7 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
      <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
-<NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625</NoWarn>  </PropertyGroup>
+<NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625;CS8604;NETSDK1138;CS8618;CS8601</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
