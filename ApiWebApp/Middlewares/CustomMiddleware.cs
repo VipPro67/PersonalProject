@@ -14,6 +14,10 @@ public class CustomMiddleware
     public async Task Invoke(HttpContext context)
     {
         await _next(context);
+        if (context.Response.HasStarted)
+        {
+            return;
+        }
         if (context.Response.StatusCode == 401)
         {
             context.Response.ContentType = "application/json";
