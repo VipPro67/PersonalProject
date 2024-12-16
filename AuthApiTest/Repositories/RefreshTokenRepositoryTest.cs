@@ -32,7 +32,7 @@ public class RefreshTokenRepositoryTest
         return context;
     }
 
-    private async Task<RefreshTokenRepository> CreateRefreshTokenRepositoryWithSeededData(ApplicationDbContext context)
+    private RefreshTokenRepository CreateRefreshTokenRepositoryWithSeededData(ApplicationDbContext context)
     {
         return new RefreshTokenRepository(context);
     }
@@ -41,7 +41,7 @@ public class RefreshTokenRepositoryTest
     public async Task AddRefreshTokenAsync_ShouldAddRefreshToken()
     {
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateRefreshTokenRepositoryWithSeededData(context);
+        var repository = CreateRefreshTokenRepositoryWithSeededData(context);
         var refreshToken = new RefreshToken { UserId = 4, Token = "test4", ExpiresAt = DateTime.Now.AddMinutes(10) };
 
         var result = await repository.AddRefreshTokenAsync(refreshToken);
@@ -54,7 +54,7 @@ public class RefreshTokenRepositoryTest
     public async Task GetRefreshTokenAsync_ShouldReturnRefreshToken()
     {
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateRefreshTokenRepositoryWithSeededData(context);
+        var repository = CreateRefreshTokenRepositoryWithSeededData(context);
 
         var refreshToken = await repository.GetRefreshTokenAsync("test2");
 
@@ -68,7 +68,7 @@ public class RefreshTokenRepositoryTest
     public async Task RemoveRefreshTokenAsync_ValidToken_True()
     {
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateRefreshTokenRepositoryWithSeededData(context);
+        var repository = CreateRefreshTokenRepositoryWithSeededData(context);
         var result = await repository.RemoveRefreshTokenAsync("test1");
 
         result.Should().BeTrue();
@@ -80,7 +80,7 @@ public class RefreshTokenRepositoryTest
     public async Task RemoveAllRefreshTokensByUserIdAsync_ValidUserId_True()
     {
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateRefreshTokenRepositoryWithSeededData(context);
+        var repository = CreateRefreshTokenRepositoryWithSeededData(context);
         var result = await repository.RemoveAllRefreshTokensByUserIdAsync(1);
         result.Should().BeTrue();
     }

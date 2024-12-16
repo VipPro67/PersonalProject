@@ -154,7 +154,7 @@ public class StudentRepositoryTest
             await repository.DeleteStudentAsync(student);
         };
 
-        result.Should().ThrowExactlyAsync<Exception>();
+        await result.Should().ThrowExactlyAsync<Exception>();
         context.Students.Count().Should().Be(3);
     }
 

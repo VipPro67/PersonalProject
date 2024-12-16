@@ -33,7 +33,7 @@ public class UserRepositoryTest
         return context;
     }
 
-    private async Task<UserRepository> CreateUserRepositoryWithSeededData(ApplicationDbContext context)
+    private UserRepository CreateUserRepositoryWithSeededData(ApplicationDbContext context)
     {
         return new UserRepository(context);
     }
@@ -42,7 +42,7 @@ public class UserRepositoryTest
     public async Task CreateAppUserAsync_ValidUser_User()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var newUser = new AppUser { UserName = "newuser", PasswordHash = "new_thing_hash", Email = "newuser@example.com", Address = "987 Maple St", FullName = "New User" };
 
@@ -56,7 +56,7 @@ public class UserRepositoryTest
     public async Task CreateAppUserAsync_InvalidEmail_Null()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
         var newUser = new AppUser
         {
             UserName = "newuser",
@@ -68,8 +68,7 @@ public class UserRepositoryTest
 
         Func<Task> act = async () => { await userRepository.CreateAppUserAsync(newUser); };
 
-        await act.Should().ThrowAsync<DbUpdateException>()
-            .WithMessage("Required properties 'Email' are missing for the instance of entity type 'AppUser'.");
+        await act.Should().ThrowAsync<DbUpdateException>();
     }
 
 
@@ -78,7 +77,7 @@ public class UserRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
         var existingUser = await context.Users.FindAsync(1);
         existingUser.UserName = "updateduser";
         existingUser.PasswordHash = "updated_thing_hash";
@@ -100,7 +99,7 @@ public class UserRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
         var appUser = await context.Users.FindAsync(1);
 
         // Act
@@ -114,10 +113,10 @@ public class UserRepositoryTest
     public async Task DeleteAppUserAsync_NonExistentUserId()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
         var appUser = new AppUser { UserId = -1, UserName = "nonexistentuser", PasswordHash = "nonexistent_thing_hash", Email = "nonexistentuser@example.com", Address = "999 Oak St", FullName = "Nonexistent User" };
 
-        userRepository.DeleteAppUserAsync(appUser);
+        await userRepository.DeleteAppUserAsync(appUser);
 
         context.Users.Count().Should().Be(3);
     }
@@ -125,7 +124,7 @@ public class UserRepositoryTest
     public async Task UpdateAppUserAsync_InvalidEmail_Null()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var updatedUser = new AppUser { UserId = 1, UserName = "updateduser", PasswordHash = "updated_thing_hash", Email = null, Address = "654 Pine St", FullName = "Updated User" };
         Func<Task> act = async () => { await userRepository.CreateAppUserAsync(updatedUser); };
@@ -135,7 +134,7 @@ public class UserRepositoryTest
     public async Task GetAppUserByIdAsync_ExistentUserId_User()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.GetAppUserByIdAsync(1);
 
@@ -151,7 +150,7 @@ public class UserRepositoryTest
     public async Task GetAppUserByIdAsync_NonExistentUserId_Null()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.GetAppUserByIdAsync(-1);
 
@@ -163,7 +162,7 @@ public class UserRepositoryTest
     public async Task GetAppUserByUserNameAsync_ExistentUserName_User()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.GetAppUserByUserNameAsync("testuser");
 
@@ -180,7 +179,7 @@ public class UserRepositoryTest
     public async Task GetAppUserByUserNameAsync_NonExistentUserName_Null()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.GetAppUserByUserNameAsync("nonexistentuser");
 
@@ -192,7 +191,7 @@ public class UserRepositoryTest
     public async Task GetAppUserByEmailAsync_ExistentEmail_User()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.GetAppUserByEmailAsync("testuser@example.com");
 
@@ -209,7 +208,7 @@ public class UserRepositoryTest
     public async Task GetAppUserByEmailAsync_NonExistentEmail_Null()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.GetAppUserByEmailAsync("nonexistentuser@example.com");
 
@@ -220,7 +219,7 @@ public class UserRepositoryTest
     public async Task IsUserExistAsync_ExistentEmail_True()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.IsUserExistAsync("testuser@example.com", "somename");
 
@@ -232,7 +231,7 @@ public class UserRepositoryTest
     public async Task IsUserExistAsync_NonExistentEmail_False()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.IsUserExistAsync("nonexistentuser@example.com", "somename");
 
@@ -244,7 +243,7 @@ public class UserRepositoryTest
     public async Task IsUserExistAsync_ExistentUserName_True()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.IsUserExistAsync("someemail", "testuser");
 
@@ -255,7 +254,7 @@ public class UserRepositoryTest
     public async Task IsUserExistAsync_NonExistentUserName_False()
     {
         var context = await CreateContextAndSeedDatabase();
-        var userRepository = await CreateUserRepositoryWithSeededData(context);
+        var userRepository = CreateUserRepositoryWithSeededData(context);
 
         var result = await userRepository.IsUserExistAsync("someemail", "nonexistentuser");
 

@@ -5,12 +5,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
      <RootNamespace>ApiWebApp</RootNamespace>
-  </PropertyGroup>
+     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625</NoWarn>  
+</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.20" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.20" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageReference Include="MMLib.SwaggerForOcelot" Version="8.3.2" />
     <PackageReference Include="Ocelot" Version="20.0.0" />

@@ -70,7 +70,7 @@ public class CourseRepositoryTest
         return context;
     }
 
-    private async Task<CourseRepository> CreateCourseRepository(ApplicationDbContext context)
+    private CourseRepository CreateCourseRepository(ApplicationDbContext context)
     {
         return new CourseRepository(context);
     }
@@ -80,7 +80,7 @@ public class CourseRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateCourseRepository(context);
+        var repository = CreateCourseRepository(context);
         var newCourse = new Course
         {
             CourseId = "CS102",
@@ -108,7 +108,7 @@ public class CourseRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateCourseRepository(context);
+        var repository = CreateCourseRepository(context);
         var courseToDelete = await context.Courses.FirstOrDefaultAsync(c => c.CourseId == "C001");
 
         // Act
@@ -124,7 +124,7 @@ public class CourseRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateCourseRepository(context);
+        var repository = CreateCourseRepository(context);
         var courseToEdit = await context.Courses.FirstOrDefaultAsync(c => c.CourseId == "C001");
         courseToEdit.CourseName = "Intro to CS - Updated";
 
@@ -141,7 +141,7 @@ public class CourseRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateCourseRepository(context);
+        var repository = CreateCourseRepository(context);
         var query = new CourseQuery { Instructor = "Jane Smith" };
 
         // Act
@@ -158,7 +158,7 @@ public class CourseRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateCourseRepository(context);
+        var repository = CreateCourseRepository(context);
         var query = new CourseQuery { Instructor = "Dr. Unknown" };
 
         // Act
@@ -173,7 +173,7 @@ public class CourseRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateCourseRepository(context);
+        var repository = CreateCourseRepository(context);
         var courseIds = new List<string> { "C001", "OOP" };
 
         // Act
@@ -190,7 +190,7 @@ public class CourseRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateCourseRepository(context);
+        var repository = CreateCourseRepository(context);
         var courseId = "C001";
 
         // Act
@@ -207,7 +207,7 @@ public class CourseRepositoryTest
     {
         // Arrange
         var context = await CreateContextAndSeedDatabase();
-        var repository = await CreateCourseRepository(context);
+        var repository = CreateCourseRepository(context);
         var courseId = "UNKNOWN";
 
         // Act
