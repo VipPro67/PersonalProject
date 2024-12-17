@@ -5,7 +5,6 @@ using StudentApi.DTOs;
 using StudentApi.Helpers;
 using StudentApi.Models;
 using StudentApi.Repositories;
-
 namespace StudentApi.Services;
 public interface IStudentService
 {

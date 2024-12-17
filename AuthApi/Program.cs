@@ -27,7 +27,7 @@ builder.Host.UseSerilog((context, configuration) =>
 // Add services to the container and configure them
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(/* Swagger configuration */);
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionString")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStringW")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();

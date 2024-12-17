@@ -46,7 +46,7 @@ builder.Services.AddSwaggerGen(option =>
 });
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionString")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStringW")));
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 
@@ -61,12 +61,7 @@ builder.Services.AddControllers(option =>
     {
         option.Filters.Add(typeof(ValidateModelStateFilter));
     })
-    .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true)
-    .AddNewtonsoftJson(options =>
-    {
-        options.SerializerSettings.Converters.Add(new IsoDateTimeConverter { DateTimeFormat = "dd-MM-yyyy" });
-        options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
-    }); ;
+    .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddAutoMapper(typeof(StudentMappingProfile));
 /*
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
