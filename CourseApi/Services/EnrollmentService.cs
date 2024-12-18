@@ -53,7 +53,9 @@ public class EnrollmentService : IEnrollmentService
 
             if (response.IsSuccessStatusCode)
             {
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent);
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new DateOnlyJsonConverter());
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent, settings);
                 if (apiResponse?.Data != null)
                 {
                     enrollments.ForEach(e => e.Student = apiResponse.Data.FirstOrDefault(s => s.StudentId == e.StudentId));
@@ -88,7 +90,9 @@ public class EnrollmentService : IEnrollmentService
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent);
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new DateOnlyJsonConverter());
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
                 if (apiResponse?.Data != null)
                 {
                     enrollment.Student = apiResponse.Data;
@@ -125,7 +129,9 @@ public class EnrollmentService : IEnrollmentService
             var responseContent = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent);
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new DateOnlyJsonConverter());
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent, settings);
                 if (apiResponse?.Data != null)
                 {
                     enrollments.ForEach(e => e.Student = apiResponse.Data.FirstOrDefault(s => s.StudentId == e.StudentId));
@@ -163,7 +169,9 @@ public class EnrollmentService : IEnrollmentService
                 return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
             }
             var responseContent = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent);
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new DateOnlyJsonConverter());
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
             if (apiResponse?.Data == null || apiResponse.Data.StudentId != studentId)
             {
                 Log.Error("Some thing wrong with student info");

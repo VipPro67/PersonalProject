@@ -61,6 +61,10 @@ builder.Services.AddControllers(option =>
     {
         option.Filters.Add(typeof(ValidateModelStateFilter));
     })
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
+    })
     .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
 builder.Services.AddAutoMapper(typeof(StudentMappingProfile));
 /*
@@ -107,12 +111,8 @@ app.UseUserInfoLogging();
 app.UseGlobalExceptionHandling();
 app.UseSerilogRequestLogging();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI();
 app.MapControllers();
 //app.UseAuthentication();
 //app.UseAuthorization();

@@ -64,7 +64,11 @@ builder.Services.AddControllers(option =>
     {
         option.Filters.Add(typeof(ValidateModelStateFilter));
     })
-    .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
+    .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true)
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
+    });
 /*
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
 var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");
@@ -111,12 +115,8 @@ app.UseUserInfoLogging();
 app.UseGlobalExceptionHandling();
 app.UseSerilogRequestLogging();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI();
 app.MapControllers();
 //app.UseAuthentication();
 //app.UseAuthorization();
