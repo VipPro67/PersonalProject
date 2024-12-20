@@ -123,14 +123,15 @@ public class CourseService : ICourseService
             var responseContent = await response.Content.ReadAsStringAsync();
             if (response.IsSuccessStatusCode)
             {
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent);
-                return new ServiceResult(_mapper.Map<List<StudentDto>>(apiResponse.Data), "Get list student in course successfully");
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new DateOnlyJsonConverter());
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent, settings);
+                if (apiResponse?.Data != null)
+                    return new ServiceResult(_mapper.Map<List<StudentDto>>(apiResponse.Data), "Get list student in course successfully");
             }
-            else
-            {
-                Log.Error($"Failed to retrieve students from StudentApi: {response.StatusCode}");
-                return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
-            }
+            Log.Error($"Failed to retrieve students from StudentApi: {response.StatusCode}");
+            return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+
         }
         catch (Exception e)
         {

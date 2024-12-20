@@ -2,7 +2,7 @@
     "Routes": [
         {
             "DownstreamPathTemplate": "/api/auth/{everything}",
-            "DownstreamScheme": "https",
+            "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
@@ -26,7 +26,7 @@
                 "PUT",
                 "DELETE"
             ],
-            "DownstreamScheme": "https",
+            "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
@@ -48,7 +48,7 @@
                 "PUT",
                 "DELETE"
             ],
-            "DownstreamScheme": "https",
+            "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
@@ -70,7 +70,7 @@
                 "PUT",
                 "DELETE"
             ],
-            "DownstreamScheme": "https",
+            "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
@@ -90,7 +90,7 @@
                 "GET",
                 "POST"
             ],
-            "DownstreamScheme": "https",
+            "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
@@ -110,7 +110,7 @@
                 "GET",
                 "POST"
             ],
-            "DownstreamScheme": "https",
+            "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
@@ -130,7 +130,7 @@
                 "GET",
                 "POST"
             ],
-            "DownstreamScheme": "https",
+            "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
                     "Host": "localhost",
@@ -152,7 +152,7 @@
                 {
                     "Name": "Auth API",
                     "Version": "v1",
-                    "Url": "https://localhost:5005/swagger/v1/swagger.json"
+                    "Url": "http://localhost:5005/swagger/v1/swagger.json"
                 }
             ]
         },
@@ -162,7 +162,7 @@
                 {
                     "Name": "Courses API",
                     "Version": "v1",
-                    "Url": "https://localhost:5001/swagger/v1/swagger.json"
+                    "Url": "http://localhost:5001/swagger/v1/swagger.json"
                 }
             ]
         },
@@ -172,13 +172,13 @@
                 {
                     "Name": "Students API",
                     "Version": "v1",
-                    "Url": "https://localhost:5002/swagger/v1/swagger.json"
+                    "Url": "http://localhost:5002/swagger/v1/swagger.json"
                 }
             ]
         }
     ],
     "GlobalConfiguration": {
-        "BaseUrl": "https://localhost:5000"
+        "BaseUrl": "http://localhost:5000"
     },
     "Logging": {
         "LogLevel": {

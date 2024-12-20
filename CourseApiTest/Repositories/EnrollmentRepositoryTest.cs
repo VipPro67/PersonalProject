@@ -1,4 +1,5 @@
 using CourseApi.Data;
+using CourseApi.Helpers;
 using CourseApi.Models;
 using CourseApi.Repositories;
 using FluentAssertions;
@@ -108,9 +109,10 @@ public class EnrollmentRepositoryTest
         // Arrange
         var context = await CreateContextAndSeedDatabase();
         var repository = await CreateEnrollmentRepository(context);
+        var query = new EnrollmentQuery {};
 
         // Act
-        var result = await repository.GetAllEnrollmentsAsync();
+        var result = await repository.GetAllEnrollmentsAsync(query);
 
         // Assert
         result.Should().NotBeNull();

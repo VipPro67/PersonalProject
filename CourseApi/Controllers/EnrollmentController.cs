@@ -18,9 +18,9 @@ public class EnrollmentController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllEnrollmentsAsync()
+    public async Task<IActionResult> GetAllEnrollmentsAsync([FromQuery]EnrollmentQuery query)
     {
-        var result = await _enrollmentService.GetAllEnrollmentsAsync();
+        var result = await _enrollmentService.GetAllEnrollmentsAsync(query);
         return this.ToActionResult(result);
     }
 

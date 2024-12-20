@@ -54,15 +54,15 @@ public class CourseRepository : ICourseRepository
         }
         if (!string.IsNullOrEmpty(query.CourseName))
         {
-            courses = courses.Where(c => c.CourseName.Contains(query.CourseName));
+            courses = courses.Where(c => c.CourseName.ToUpper().Contains(query.CourseName.ToUpper()));
         }
         if (!string.IsNullOrEmpty(query.Instructor))
         {
-            courses = courses.Where(c => c.Instructor.Contains(query.Instructor));
+            courses = courses.Where(c => c.Instructor.ToUpper().Contains(query.Instructor.ToUpper()));
         }
         if (!string.IsNullOrEmpty(query.Department))
         {
-            courses = courses.Where(c => c.Department.Contains(query.Department));
+            courses = courses.Where(c => c.Department.ToUpper().Contains(query.Department.ToUpper()));
         }
 
         if (query.CreditMin.HasValue)
@@ -91,13 +91,14 @@ public class CourseRepository : ICourseRepository
         // }
         if (!string.IsNullOrEmpty(query.Schedule))
         {
-            courses = courses.Where(c => c.Schedule.Contains(query.Schedule));
+            courses = courses.Where(c => c.Schedule.ToUpper().Contains(query.Schedule.ToUpper()));
         }
         if (query.Page.HasValue && query.ItemsPerPage.HasValue)
         {
             courses = courses.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
                           .Take(query.ItemsPerPage.Value);
         }
+        courses.OrderBy(c => c.CourseId);
         return await courses.ToListAsync();
     }
 

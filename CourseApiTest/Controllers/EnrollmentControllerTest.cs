@@ -31,11 +31,12 @@ public class EnrollmentControllerTests
                 StudentId = 1,
             }
         };
+        var query = new EnrollmentQuery{};
         var serviceResult = new ServiceResult(enrollments, "Get all enrollments successfully");
-        _mockEnrollmentService.Setup(s => s.GetAllEnrollmentsAsync()).ReturnsAsync(serviceResult);
+        _mockEnrollmentService.Setup(s => s.GetAllEnrollmentsAsync(query)).ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _enrollmentController.GetAllEnrollmentsAsync();
+        var result = await _enrollmentController.GetAllEnrollmentsAsync(query);
 
         // Assert
         result.Should().BeOfType<OkObjectResult>();
