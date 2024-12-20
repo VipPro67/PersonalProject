@@ -125,13 +125,18 @@ public class StudentService : IStudentService
             Log.Error("Id in UpdateStudentDto does not match the id in the URL");
             return new ServiceResult(ResultType.BadRequest, "Id in UpdateStudentDto does not match the id in the URL");
         }
+
         var existingStudent = await _studentRepository.GetStudentByIdAsync(id);
         if (existingStudent == null)
         {
             Log.Error($"Update student with id {id} failed. Student not found");
             return new ServiceResult(ResultType.NotFound, "Student not found");
         }
-        var result = await _studentRepository.UpdateStudentAsync(_mapper.Map<Student>(updatedStudentDto));
+
+        _mapper.Map(updatedStudentDto, existingStudent);
+
+        var result = await _studentRepository.UpdateStudentAsync(existingStudent);
         return new ServiceResult(_mapper.Map<StudentDto>(result), "Update student successfully");
     }
+
 }

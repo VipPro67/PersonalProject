@@ -1,4 +1,5 @@
 using CourseApi.Data;
+using CourseApi.Helpers;
 using CourseApi.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,7 +7,7 @@ namespace CourseApi.Repositories;
 
 public interface IEnrollmentRepository
 {
-    Task<List<Enrollment>?> GetAllEnrollmentsAsync();
+    Task<List<Enrollment>?> GetAllEnrollmentsAsync(EnrollmentQuery query);
     Task<Enrollment?> GetEnrollmentByIdAsync(int enrollmentId);
 
     Task<bool> IsStudentEnrolledInCourseAsync(int enrollmentId, string courseId);
@@ -40,9 +41,21 @@ public class EnrollmentRepository : IEnrollmentRepository
         return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<List<Enrollment>?> GetAllEnrollmentsAsync()
+    public async Task<List<Enrollment>?> GetAllEnrollmentsAsync(EnrollmentQuery query)
     {
-        return await _context.Enrollments.Include(e => e.Course).ToListAsync();
+        var enrollments = _context.Enrollments.AsQueryable();
+        enrollments = enrollments.Include(e => e.Course);
+        if (query.StudentId.HasValue)
+        {
+            enrollments = enrollments.Where(e => e.StudentId == query.StudentId);
+        }
+        if (!string.IsNullOrWhiteSpace(query.CourseId))
+        {
+            enrollments = enrollments.Where(e => e.CourseId == query.CourseId.ToUpper());
+        }
+        enrollments = enrollments.Skip((query.Page - 1) * query.Page).Take(query.ItemsPerPage);
+        enrollments = enrollments.OrderBy(e => e.EnrollmentId);
+        return await enrollments.ToListAsync();
     }
 
     public async Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync(string courseId)

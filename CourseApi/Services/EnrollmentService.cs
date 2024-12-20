@@ -10,7 +10,7 @@ namespace CourseApi.Services;
 
 public interface IEnrollmentService
 {
-    Task<ServiceResult> GetAllEnrollmentsAsync();
+    Task<ServiceResult> GetAllEnrollmentsAsync(EnrollmentQuery query);
     Task<ServiceResult> GetEnrollmentByIdAsync(int enrollmentId);
 
     Task<ServiceResult> GetEnrollmentsByCourseIdAsync(string courseId);
@@ -35,9 +35,9 @@ public class EnrollmentService : IEnrollmentService
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
         return new HttpClient { BaseAddress = new Uri(studentApiUrl) };
     }
-    public async Task<ServiceResult> GetAllEnrollmentsAsync()
+    public async Task<ServiceResult> GetAllEnrollmentsAsync(EnrollmentQuery query)
     {
-        var enrollments = await _enrollmentRepository.GetAllEnrollmentsAsync();
+        var enrollments = await _enrollmentRepository.GetAllEnrollmentsAsync(query);
         if (enrollments == null || enrollments.Count == 0)
         {
             Log.Error("No enrollments found");

@@ -54,7 +54,7 @@ public class StudentRepository : IStudentRepository
         var students = _context.Students.AsQueryable();
         if (!string.IsNullOrWhiteSpace(query.StudentName))
         {
-            students = students.Where(s => s.FullName.Contains(query.StudentName));
+            students = students.Where(s => s.FullName.ToUpper().Contains(query.StudentName.ToUpper()));
         }
         if (!string.IsNullOrWhiteSpace(query.Email))
         {
@@ -66,7 +66,7 @@ public class StudentRepository : IStudentRepository
         }
         if (!string.IsNullOrEmpty(query.Address))
         {
-            students = students.Where(c => c.Address.Contains(query.Address));
+            students = students.Where(c => c.Address.ToUpper().Contains(query.Address.ToUpper()));
         }
 
         if (query.GradeMin.HasValue)
@@ -82,6 +82,7 @@ public class StudentRepository : IStudentRepository
             students = students.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
                           .Take(query.ItemsPerPage.Value);
         }
+        students = students.OrderBy(s => s.StudentId);
         return await students.ToListAsync();
     }
 
