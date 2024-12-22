@@ -13,6 +13,8 @@ public interface IStudentRepository
 
     Task<Student?> GetStudentByEmailAsync(string email);
 
+    Task<Student?> GetStudentByPhoneNumberAsync(string phoneNumber);
+
     Task<Student?> CreateStudentAsync(Student student);
 
     Task<Student?> UpdateStudentAsync(Student student);
@@ -88,12 +90,17 @@ public class StudentRepository : IStudentRepository
 
     public async Task<Student?> GetStudentByEmailAsync(string email)
     {
-        return await _context.Students.Where(x => x.Email == email).FirstOrDefaultAsync();
+        return await _context.Students.Where(x => x.Email.ToUpper() == email.ToUpper()).FirstOrDefaultAsync();
     }
 
     public async Task<Student?> GetStudentByIdAsync(int studentId)
     {
         return await _context.Students.FirstOrDefaultAsync(x => x.StudentId == studentId);
+    }
+
+    public async Task<Student?> GetStudentByPhoneNumberAsync(string phoneNumber)
+    {
+        return await _context.Students.Where(x => x.PhoneNumber == phoneNumber).FirstOrDefaultAsync();
     }
 
     public async Task<List<Student>> GetStudentsByIdsAsync(List<int> ids)

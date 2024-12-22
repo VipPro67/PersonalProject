@@ -169,9 +169,9 @@ public class EnrollmentService : IEnrollmentService
                 return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
             }
             var responseContent = await response.Content.ReadAsStringAsync();
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new DateOnlyJsonConverter());
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new DateOnlyJsonConverter());
+            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
             if (apiResponse?.Data == null || apiResponse.Data.StudentId != studentId)
             {
                 Log.Error("Some thing wrong with student info");
@@ -213,13 +213,16 @@ public class EnrollmentService : IEnrollmentService
                 return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
             }
             var responseContent = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent);
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new DateOnlyJsonConverter());
+            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
             if (apiResponse?.Data == null || apiResponse.Data.StudentId != createEnrollmentDto.StudentId)
             {
                 Log.Error("Some thing wrong with student info");
                 return new ServiceResult(ResultType.BadRequest, "Some thing wrong with student info");
             }
             var enrollment = _mapper.Map<Enrollment>(createEnrollmentDto);
+            enrollment.Student = apiResponse.Data;
             var result = await _enrollmentRepository.CreateEnrollmentAsync(enrollment);
             if (result == null)
             {
