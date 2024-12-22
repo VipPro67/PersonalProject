@@ -18,12 +18,12 @@ public class ValidateModelStateFilter : IActionFilter
         {
             return;
         }
-        var errors = context.ModelState
-                .Where(e => e.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray()
-                );
+      var errors = context.ModelState
+            .Where(e => e.Value.Errors.Count > 0)
+            .ToDictionary(
+                kvp => char.ToLower(kvp.Key[0]) + kvp.Key.Substring(1),
+                kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+            );
 
         Log.Error("Validation failed for request: {0}", context.HttpContext.Request.Path);
         context.Result = new BadRequestObjectResult(new ErrorResponse(400, "Validation failed", errors));
