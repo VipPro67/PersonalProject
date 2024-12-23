@@ -209,6 +209,12 @@ public class EnrollmentService : IEnrollmentService
             var response = await studentApiClient.GetAsync($"api/students/{createEnrollmentDto.StudentId}");
             if (!response.IsSuccessStatusCode)
             {
+                if(response.StatusCode==System.Net.HttpStatusCode.NotFound)
+                {
+                Log.Error($"Student not found");
+                return new ServiceResult(ResultType.InternalServerError, $"StudentId {createEnrollmentDto.StudentId} not found");
+
+                }
                 Log.Error($"Failed to retrieve student with id {createEnrollmentDto.StudentId} from StudentApi: {response.StatusCode}");
                 return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
             }
