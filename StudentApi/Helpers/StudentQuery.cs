@@ -10,6 +10,8 @@ public class StudentQuery
     public int? GradeMin { get; set; }
     public int? GradeMax { get; set; }
 
+    public string? SortBy { get; set; } = "StudentId";
+    public string? SortByDirection { get; set; } = "asc";
     public int? Page { get; set; } = 1;
     public int? ItemsPerPage { get; set; } = 10;
 

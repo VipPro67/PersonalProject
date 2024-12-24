@@ -91,7 +91,11 @@ public class StudentRepository : IStudentRepository
         {
             students = students.Where(c => c.Grade <= query.GradeMax);
         }
-        students = students.OrderBy(s => s.StudentId);
+        // Apply sorting
+        if (!string.IsNullOrWhiteSpace(query.SortBy))
+        {
+            students = ApplySorting(students, query.SortBy, query.SortByDirection);
+        }
         if (query.Page.HasValue && query.ItemsPerPage.HasValue)
         {
             students = students.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
@@ -102,6 +106,27 @@ public class StudentRepository : IStudentRepository
         return await students.ToListAsync();
     }
 
+    private IQueryable<Student> ApplySorting(IQueryable<Student> students, string sortBy, string sortDirection)
+    {
+        bool isAscending = string.IsNullOrEmpty(sortDirection) || sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase);
+        switch (sortBy.ToLower())
+        {
+            case "studentid":
+                return isAscending ? students.OrderBy(s => s.StudentId) : students.OrderByDescending(s => s.StudentId);
+            case "fullname":
+                return isAscending ? students.OrderBy(s => s.FullName) : students.OrderByDescending(s => s.FullName);
+            case "email":
+                return isAscending ? students.OrderBy(s => s.Email) : students.OrderByDescending(s => s.Email);
+            case "phonenumber":
+                return isAscending ? students.OrderBy(s => s.PhoneNumber) : students.OrderByDescending(s => s.PhoneNumber);
+            case "address":
+                return isAscending ? students.OrderBy(s => s.Address) : students.OrderByDescending(s => s.Address);
+            case "grade":
+                return isAscending ? students.OrderBy(s => s.Grade) : students.OrderByDescending(s => s.Grade);
+            default:
+                return students.OrderBy(s => s.StudentId);
+        }
+    }
     public async Task<Student?> GetStudentByEmailAsync(string email)
     {
         return await _context.Students.Where(x => x.Email.ToUpper() == email.ToUpper()).FirstOrDefaultAsync();

@@ -8,7 +8,6 @@ namespace CourseApi.Repositories;
 public interface ICourseRepository
 {
     Task<List<Course>?> GetAllCoursesAsync(CourseQuery query);
-
     Task<List<Course>?> GetCoursesByIdsAsync(List<string> courseIds);
     Task<Course?> GetCourseByCourseIdAsync(string courseId);
     Task<Course?> EditCourseAsync(Course course);
@@ -94,13 +93,45 @@ public class CourseRepository : ICourseRepository
         {
             courses = courses.Where(c => c.Schedule.ToUpper().Contains(query.Schedule.ToUpper()));
         }
-        courses = courses.OrderBy(c => c.CourseId);
-        if (query.Page.HasValue && query.ItemsPerPage.HasValue)
+
+        if (!string.IsNullOrEmpty(query.SortBy) &&!string.IsNullOrEmpty(query.SortByDirection))
+        {
+            courses = ApplySorting(courses, query.SortBy, query.SortByDirection);
+        }
+
+        if (query.Page.HasValue && query.ItemsPerPage.HasValue && query.ItemsPerPage.Value > 0  & query.Page.Value > 0)
         {
             courses = courses.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
-                          .Take(query.ItemsPerPage.Value);
+            .Take(query.ItemsPerPage.Value);
         }
         return await courses.ToListAsync();
+    }
+    
+    private IQueryable<Course> ApplySorting(IQueryable<Course> courses, string sortBy, string? sortDirection)
+    {
+        bool isAscending = string.IsNullOrEmpty(sortDirection) || sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase);
+    
+        switch (sortBy.ToLower())
+        {
+            case "courseid":
+                return isAscending ? courses.OrderBy(c => c.CourseId) : courses.OrderByDescending(c => c.CourseId);
+            case "coursename":
+                return isAscending ? courses.OrderBy(c => c.CourseName) : courses.OrderByDescending(c => c.CourseName);
+            case "instructor":
+                return isAscending ? courses.OrderBy(c => c.Instructor) : courses.OrderByDescending(c => c.Instructor);
+            case "department":
+                return isAscending ? courses.OrderBy(c => c.Department) : courses.OrderByDescending(c => c.Department);
+            case "credit":
+                return isAscending ? courses.OrderBy(c => c.Credit) : courses.OrderByDescending(c => c.Credit);
+            case "startdate":
+                return isAscending? courses.OrderBy(c => c.StartDate) : courses.OrderByDescending(c => c.StartDate);
+            case "enddate":
+                return isAscending? courses.OrderBy(c => c.EndDate) : courses.OrderByDescending(c => c.EndDate);
+            case "schedule":
+                return isAscending ? courses.OrderBy(c => c.Schedule) : courses.OrderByDescending(c => c.Schedule);
+            default:
+                return courses.OrderBy(c => c.CourseId); 
+        }
     }
 
     public async Task<List<Course>?> GetCoursesByIdsAsync(List<string> courseIds)
