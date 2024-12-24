@@ -57,11 +57,22 @@ public class StudentRepository : IStudentRepository
         var students = _context.Students.AsQueryable();
         if (!string.IsNullOrWhiteSpace(query.StudentName))
         {
-            students = students.Where(s => s.FullName.Contains(query.StudentName, StringComparison.OrdinalIgnoreCase));
+            students = students.Where(s => s.FullName.ToUpper().Contains(query.StudentName.ToUpper()));
         }
         if (!string.IsNullOrWhiteSpace(query.Email))
         {
-            students = students.Where(s => s.Email.Contains(query.Email));
+            //students = students.Where(s => s.Email.ToUpper().Contains(query.Email.ToUpper()));
+            /*'%lice%'*/
+            students = students.Where(s => EF.Functions.Like(s.Email.ToUpper(), $"{query.Email.ToUpper()}%"));
+            /*
+            2024-12-24T08:23:08.4090062+00:00 [INF] (StudentApi//) GetStudentsAsync: -- @__Format_1='NON%'
+            -- @__p_3='10'
+            -- @__p_2='0'
+            SELECT s."StudentId", s."Address", s."DateOfBirth", s."Email", s."FullName", s."Grade", s."PhoneNumber"
+            FROM "Students" AS s
+            WHERE upper(s."Email") LIKE @__Format_1 ESCAPE ''
+            ORDER BY s."StudentId"
+            LIMIT @__p_3 OFFSET @__p_2*/
         }
         if (!string.IsNullOrWhiteSpace(query.PhoneNumber))
         {
@@ -69,7 +80,7 @@ public class StudentRepository : IStudentRepository
         }
         if (!string.IsNullOrEmpty(query.Address))
         {
-            students = students.Where(c => c.Address.Contains(query.Address, StringComparison.OrdinalIgnoreCase));
+            students = students.Where(c => c.Address.ToUpper().Contains(query.Address.ToUpper()));
         }
 
         if (query.GradeMin.HasValue)
@@ -80,12 +91,12 @@ public class StudentRepository : IStudentRepository
         {
             students = students.Where(c => c.Grade <= query.GradeMax);
         }
+        students = students.OrderBy(s => s.StudentId);
         if (query.Page.HasValue && query.ItemsPerPage.HasValue)
         {
             students = students.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
                           .Take(query.ItemsPerPage.Value);
         }
-        students = students.OrderBy(s => s.StudentId);
         // Log the query
         Log.Information($"GetStudentsAsync: {students.ToQueryString()}");
         return await students.ToListAsync();

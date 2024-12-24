@@ -13,6 +13,8 @@ public static class HandleHTML
     public static string StripHTML(this string html)
     {
         var sanitizer = new HtmlSanitizer();
+        //make default allowed tags is null
+        sanitizer.AllowedTags.Clear();
         sanitizer.AllowedTags.Add("b");
         sanitizer.AllowedTags.Add("i");
         sanitizer.AllowedTags.Add("u");

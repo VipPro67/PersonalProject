@@ -63,7 +63,7 @@ public class CourseRepository : ICourseRepository
         }
         if (!string.IsNullOrEmpty(query.Department))
         {
-            courses = courses.Where(c => c.Department.Contains(query.Department, StringComparison.OrdinalIgnoreCase));
+            courses = courses.Where(c => c.Department.ToUpper().Contains(query.Department.ToUpper()));
         }
 
         if (query.CreditMin.HasValue)
@@ -92,14 +92,15 @@ public class CourseRepository : ICourseRepository
         // }
         if (!string.IsNullOrEmpty(query.Schedule))
         {
-            courses = courses.Where(c => c.Schedule.Contains(query.Schedule,StringComparison.InvariantCultureIgnoreCase));
+            courses = courses.Where(c => c.Schedule.ToUpper().Contains(query.Schedule.ToUpper()));
         }
+        courses = courses.OrderBy(c => c.CourseId);
         if (query.Page.HasValue && query.ItemsPerPage.HasValue)
         {
             courses = courses.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
                           .Take(query.ItemsPerPage.Value);
         }
-        return await courses.OrderBy(c=>c.CourseId).ToListAsync();
+        return await courses.ToListAsync();
     }
 
     public async Task<List<Course>?> GetCoursesByIdsAsync(List<string> courseIds)

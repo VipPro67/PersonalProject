@@ -53,8 +53,9 @@ public class EnrollmentRepository : IEnrollmentRepository
         {
             enrollments = enrollments.Where(e => e.CourseId == query.CourseId.ToUpper());
         }
-        enrollments = enrollments.Skip((query.Page - 1) * query.Page).Take(query.ItemsPerPage);
         enrollments = enrollments.OrderBy(e => e.EnrollmentId);
+
+        enrollments = enrollments.Skip((query.Page - 1) * query.Page).Take(query.ItemsPerPage);
         return await enrollments.ToListAsync();
     }
 

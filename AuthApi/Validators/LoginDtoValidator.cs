@@ -12,8 +12,10 @@ public class LoginDtoValidator : AbstractValidator<LoginDto>
     {
         _localization = localization;
         RuleFor(x => x.UserName)
+            .Must(username => !username.Contains(" ")).WithMessage(_localization[ResourceKey.UsernameNoSpaces])
             .NotEmpty().WithMessage(_localization[ResourceKey.UsernameRequired]);
         RuleFor(x => x.Password)
+             .Must(username => !username.Contains(" ")).WithMessage(_localization[ResourceKey.UsernameNoSpaces])
             .NotEmpty().WithMessage(_localization[ResourceKey.PasswordRequired]);
     }
 }

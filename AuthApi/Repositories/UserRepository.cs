@@ -31,12 +31,12 @@ namespace AuthApi.Repositories
 
         public async Task<AppUser?> GetAppUserByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email.ToUpper() == email.ToUpper());
         }
 
         public async Task<AppUser?> GetAppUserByUserNameAsync(string userName)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserName.ToUpper() == userName.ToUpper().Trim());
         }
 
         public async Task<bool> IsUserExistAsync(string? email, string? userName)

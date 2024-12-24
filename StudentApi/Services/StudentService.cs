@@ -34,10 +34,15 @@ public class StudentService : IStudentService
     }
     public async Task<ServiceResult> CreateStudentAsync(CreateStudentDto createStudentDto)
     {
-        if (await _studentRepository.GetStudentByEmailAsync(createStudentDto.Email) != null || await _studentRepository.GetStudentByPhoneNumberAsync(createStudentDto.PhoneNumber) != null)
+        if (await _studentRepository.GetStudentByEmailAsync(createStudentDto.Email) != null)
         {
-            Log.Error($"Create student failed. Student with email {createStudentDto.Email} or phoneNumber {createStudentDto.PhoneNumber} already exists");
-            return new ServiceResult(ResultType.BadRequest, "Student with email already exists");
+            Log.Error($"Create student failed. Student with email {createStudentDto.Email} already exists");
+            return new ServiceResult(ResultType.BadRequest, $"Student with email {createStudentDto.Email} already exists");
+        }
+        if (await _studentRepository.GetStudentByPhoneNumberAsync(createStudentDto.PhoneNumber) != null)
+        {
+            Log.Error($"Create student failed. Student with phoneNumber {createStudentDto.PhoneNumber} already exists");
+            return new ServiceResult(ResultType.BadRequest, $"Student with phoneNumber {createStudentDto.PhoneNumber} already exists");
         }
         var result = await _studentRepository.CreateStudentAsync(_mapper.Map<Student>(createStudentDto));
         return new ServiceResult(_mapper.Map<StudentDto>(result), "Create student successfully");
@@ -134,12 +139,12 @@ public class StudentService : IStudentService
         }
         if (await _studentRepository.GetStudentByEmailAsync(updatedStudentDto.Email) != existingStudent)
         {
-            Log.Error($"Create student failed. Student with email {updatedStudentDto.Email} already exists");
+            Log.Error($"Update student failed. Student with email {updatedStudentDto.Email} already exists");
             return new ServiceResult(ResultType.BadRequest, $"Student with email {updatedStudentDto.Email} already exists");
         }
         if (await _studentRepository.GetStudentByPhoneNumberAsync(updatedStudentDto.PhoneNumber) != existingStudent)
         {
-            Log.Error($"Create student failed. Student with phoneNumber {updatedStudentDto.PhoneNumber} already exists");
+            Log.Error($"Update student failed. Student with phoneNumber {updatedStudentDto.PhoneNumber} already exists");
             return new ServiceResult(ResultType.BadRequest, $"Student with phoneNumber {updatedStudentDto.PhoneNumber} already exists");
         }
         _mapper.Map(updatedStudentDto, existingStudent);
