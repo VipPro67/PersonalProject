@@ -41,7 +41,7 @@ namespace AuthApi.Repositories
 
         public async Task<bool> IsUserExistAsync(string? email, string? userName)
         {
-            return await _context.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower() || u.UserName.ToLower() == userName.ToLower());
+            return await _context.Users.AnyAsync(u => u.Email.Equals(email,StringComparison.OrdinalIgnoreCase)  || u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase)  );
         }
         public async Task<AppUser?> CreateAppUserAsync(AppUser appUser)
         {

@@ -2,6 +2,7 @@ using StudentApi.Data;
 using StudentApi.Models;
 using Microsoft.EntityFrameworkCore;
 using StudentApi.Helpers;
+using Serilog;
 
 namespace StudentApi.Repositories;
 public interface IStudentRepository
@@ -56,7 +57,7 @@ public class StudentRepository : IStudentRepository
         var students = _context.Students.AsQueryable();
         if (!string.IsNullOrWhiteSpace(query.StudentName))
         {
-            students = students.Where(s => s.FullName.ToUpper().Contains(query.StudentName.ToUpper()));
+            students = students.Where(s => s.FullName.Contains(query.StudentName, StringComparison.OrdinalIgnoreCase));
         }
         if (!string.IsNullOrWhiteSpace(query.Email))
         {
@@ -68,7 +69,7 @@ public class StudentRepository : IStudentRepository
         }
         if (!string.IsNullOrEmpty(query.Address))
         {
-            students = students.Where(c => c.Address.ToUpper().Contains(query.Address.ToUpper()));
+            students = students.Where(c => c.Address.Contains(query.Address, StringComparison.OrdinalIgnoreCase));
         }
 
         if (query.GradeMin.HasValue)
@@ -85,6 +86,8 @@ public class StudentRepository : IStudentRepository
                           .Take(query.ItemsPerPage.Value);
         }
         students = students.OrderBy(s => s.StudentId);
+        // Log the query
+        Log.Information($"GetStudentsAsync: {students.ToQueryString()}");
         return await students.ToListAsync();
     }
 

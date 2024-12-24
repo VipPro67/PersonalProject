@@ -2,6 +2,7 @@
 using CourseApi.Models;
 using CourseApi.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System.Collections;
 
 namespace CourseApi.Repositories;
 public interface ICourseRepository
@@ -62,7 +63,7 @@ public class CourseRepository : ICourseRepository
         }
         if (!string.IsNullOrEmpty(query.Department))
         {
-            courses = courses.Where(c => c.Department.ToUpper().Contains(query.Department.ToUpper()));
+            courses = courses.Where(c => c.Department.Contains(query.Department, StringComparison.OrdinalIgnoreCase));
         }
 
         if (query.CreditMin.HasValue)
@@ -91,20 +92,19 @@ public class CourseRepository : ICourseRepository
         // }
         if (!string.IsNullOrEmpty(query.Schedule))
         {
-            courses = courses.Where(c => c.Schedule.ToUpper().Contains(query.Schedule.ToUpper()));
+            courses = courses.Where(c => c.Schedule.Contains(query.Schedule,StringComparison.InvariantCultureIgnoreCase));
         }
         if (query.Page.HasValue && query.ItemsPerPage.HasValue)
         {
             courses = courses.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
                           .Take(query.ItemsPerPage.Value);
         }
-        courses.OrderBy(c => c.CourseId);
-        return await courses.ToListAsync();
+        return await courses.OrderBy(c=>c.CourseId).ToListAsync();
     }
 
     public async Task<List<Course>?> GetCoursesByIdsAsync(List<string> courseIds)
     {
-        return await _context.Courses.Where(x => courseIds.Contains(x.CourseId.ToUpper())).ToListAsync();
+        return await _context.Courses.Where(x => courseIds.Contains(x.CourseId)).ToListAsync();
     }
 
     public async Task<Course?> GetCourseByCourseIdAsync(string courseId)

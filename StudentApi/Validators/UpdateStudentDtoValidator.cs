@@ -9,11 +9,14 @@ public class UpdateStudentDtoValidator : AbstractValidator<UpdateStudentDto>
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email is required")
             .EmailAddress().WithMessage("Email is not in a valid format")
-            .MaximumLength(100).WithMessage("Email should not exceed 100 characters");
+            .MaximumLength(100).WithMessage("Email should not exceed 100 characters")
+            .Must(s => !s.Contains('<') && !s.Contains('>') && !s.Contains('&')).WithMessage("Email should not contain HTML tags");
+;
 
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("FullName is required")
-            .MaximumLength(100).WithMessage("FullName should not exceed 100 characters");
+            .MaximumLength(100).WithMessage("FullName should not exceed 100 characters")
+            .Must(s => !s.Contains('<') && !s.Contains('>') && !s.Contains('&')).WithMessage("FullName should not contain HTML tags");
 
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("PhoneNumber is required")

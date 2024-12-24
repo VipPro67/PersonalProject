@@ -237,4 +237,20 @@
     <value>Mã thông báo làm mới không hợp lệ hoặc đã hết hạn</value>
     <comment/>
   </data>
+    <data name="NoHtmlOrScript" xml:space="preserve">
+    <value>Html và tập lệnh là không hợp lệ</value>
+    <comment/>
+  </data>
+  <data name="PasswordNoSpaces" xml:space="preserve">
+    <value>Mật khẩu không được chứa dấu cách</value>
+    <comment/>
+  </data>
+  <data name="UsernameNoSpaces" xml:space="preserve">
+    <value>Tên người dùng không được chứa dấu cách</value>
+    <comment/>
+  </data>
+  <data name="EmailNoSpaces" xml:space="preserve">
+    <value>Email  không được chứa dấu cách</value>
+    <comment/>
+  </data>
 </root>

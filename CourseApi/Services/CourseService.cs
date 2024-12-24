@@ -3,6 +3,7 @@ using CourseApi.DTOs;
 using CourseApi.Helpers;
 using CourseApi.Models;
 using CourseApi.Repositories;
+using Ganss.Xss;
 using Newtonsoft.Json;
 using Serilog;
 

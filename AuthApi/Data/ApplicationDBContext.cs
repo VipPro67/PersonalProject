@@ -32,7 +32,7 @@ public class ApplicationDbContext : DbContext
         rt =>
         {
             rt.HasKey(rt => rt.Token);
-            rt.Property(rt => rt.UserId).IsRequired();
+            rt.HasIndex(rt => rt.UserId).IsUnique();
             rt.Property(rt => rt.Token).IsRequired().HasColumnType("text");
             rt.Property(rt => rt.ExpiresAt).IsRequired();
             rt.HasOne(rt => rt.User)

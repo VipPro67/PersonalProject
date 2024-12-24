@@ -5,6 +5,7 @@ namespace AuthApi.Repositories;
 public interface IRefreshTokenRepository
 {
     Task<RefreshToken?> GetRefreshTokenAsync(string token);
+    Task<RefreshToken?> GetRefreshTokenByUserIdAsync(int userId);
 
     Task<bool> AddRefreshTokenAsync(RefreshToken refreshToken);
 
@@ -28,6 +29,10 @@ public class RefreshTokenRepository : IRefreshTokenRepository
     public async Task<RefreshToken?> GetRefreshTokenAsync(string token)
     {
         return await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == token);
+    }
+    public async Task<RefreshToken?> GetRefreshTokenByUserIdAsync(int userId)
+    {
+        return await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.UserId == userId);
     }
 
     public async Task<bool> RemoveRefreshTokenAsync(string token)

@@ -27,4 +27,12 @@ public static class ResourceKey
     public static readonly string UsernameMaxLength = "UsernameMaxLength";
     public static readonly string UsernameRequired = "UsernameRequired";
     public static readonly string ValidationFailed = "ValidationFailed";
+
+    public static readonly string NoHtmlOrScript = "NoHtmlOrScript";
+    public static readonly string PasswordNoSpaces = "PasswordNoSpaces";
+
+    public static readonly string UsernameNoSpaces = "UsernameNoSpaces";
+
+    public static readonly string EmailNoSpaces = "EmailNoSpaces";
+    
 }

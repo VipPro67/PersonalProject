@@ -237,4 +237,21 @@
     <value>The refresh token is invalid or has expired</value>
     <comment/>
   </data>
+  <data name="NoHtmlOrScript" xml:space="preserve">
+    <value>Html and script are invalid</value>
+    <comment/>
+  </data>
+<data name="PasswordNoSpaces" xml:space="preserve">
+    <value>Password must not contain spaces.</value>
+    <comment/>
+  </data>
+  <data name="UsernameNoSpaces" xml:space="preserve">
+    <value>Username must not contain spaces.</value>
+    <comment/>
+  </data>
+  <data name="EmailNoSpaces" xml:space="preserve">
+    <value>Email must not contain spaces.</value>
+    <comment/>
+  </data>
+
 </root>

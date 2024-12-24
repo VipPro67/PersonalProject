@@ -45,11 +45,12 @@ public class EnrollmentServiceTests
     public async Task GetAllEnrollmentsAsync_NoEnrollments_NotFound()
     {
         // Arrange
-        _mockEnrollmentRepository.Setup(r => r.GetAllEnrollmentsAsync())
+        var query = new EnrollmentQuery{};
+        _mockEnrollmentRepository.Setup(r => r.GetAllEnrollmentsAsync(query))
                                  .ReturnsAsync(new List<Enrollment>());
 
         // Act
-        var result = await _enrollmentService.GetAllEnrollmentsAsync();
+        var result = await _enrollmentService.GetAllEnrollmentsAsync(query);
 
         // Assert
         result.Should().NotBeNull();
@@ -66,7 +67,8 @@ public class EnrollmentServiceTests
         new Enrollment { EnrollmentId = 1, StudentId = 1, CourseId = "C001" },
         new Enrollment { EnrollmentId = 2, StudentId = 2, CourseId = "C002" }
     };
-        _mockEnrollmentRepository.Setup(r => r.GetAllEnrollmentsAsync())
+    var query = new EnrollmentQuery {};
+        _mockEnrollmentRepository.Setup(r => r.GetAllEnrollmentsAsync(query))
                                  .ReturnsAsync(enrollments);
 
         var studentsApiResponse = new ApiResponse<List<Student>>()
@@ -87,7 +89,7 @@ public class EnrollmentServiceTests
             });
         Environment.SetEnvironmentVariable("StudentApiUrl", "https://localhost:5002");
         // Act
-        var result = await _mockEnrollmentService.Object.GetAllEnrollmentsAsync();
+        var result = await _mockEnrollmentService.Object.GetAllEnrollmentsAsync(query);
 
         // Assert
         result.Should().NotBeNull();
