@@ -16,6 +16,7 @@ public class CreateStudentDtoValidator : AbstractValidator<CreateStudentDto>
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("FullName is required")
             .MaximumLength(100).WithMessage("FullName should not exceed 100 characters")
+            .Matches(@"^[a-zA-Z\s]*$").WithMessage("FullName should only contain alphanumeric and spaces")
             .Must(s => !s.Contains('<') && !s.Contains('>') && !s.Contains('&')).WithMessage("FullName should not contain HTML tags");
 
         RuleFor(x => x.PhoneNumber)
