@@ -24,6 +24,7 @@ public interface IStudentRepository
 
     Task<List<Student>> GetStudentsByIdsAsync(List<int> ids);
 
+    Task<int> GetTotalStudentsAsync(StudentQuery query);
 
 }
 public class StudentRepository : IStudentRepository
@@ -61,9 +62,9 @@ public class StudentRepository : IStudentRepository
         }
         if (!string.IsNullOrWhiteSpace(query.Email))
         {
-            //students = students.Where(s => s.Email.ToUpper().Contains(query.Email.ToUpper()));
+            students = students.Where(s => s.Email.ToUpper().Contains(query.Email.ToUpper()));
             /*'%lice%'*/
-            students = students.Where(s => EF.Functions.Like(s.Email.ToUpper(), $"{query.Email.ToUpper()}%"));
+            //students = students.Where(s => EF.Functions.Like(s.Email.ToUpper(), $"{query.Email.ToUpper()}%"));
             /*
             2024-12-24T08:23:08.4090062+00:00 [INF] (StudentApi//) GetStudentsAsync: -- @__Format_1='NON%'
             -- @__p_3='10'
@@ -158,5 +159,35 @@ public class StudentRepository : IStudentRepository
         _context.Entry(student).State = EntityState.Modified;
         await _context.SaveChangesAsync();
         return student;
+    }
+
+    public async Task<int> GetTotalStudentsAsync(StudentQuery query)
+    {
+        var students = _context.Students.AsQueryable();
+        if (!string.IsNullOrWhiteSpace(query.StudentName))
+        {
+            students = students.Where(s => s.FullName.ToUpper().Contains(query.StudentName.ToUpper()));
+        }
+        if (!string.IsNullOrWhiteSpace(query.Email))
+        {
+            students = students.Where(s => s.Email.ToUpper().Contains(query.Email.ToUpper()));
+        }
+        if (!string.IsNullOrWhiteSpace(query.PhoneNumber))
+        {
+            students = students.Where(s => s.PhoneNumber.Contains(query.PhoneNumber));
+        }
+        if (!string.IsNullOrWhiteSpace(query.Address))
+        {
+            students = students.Where(c => c.Address.ToUpper().Contains(query.Address.ToUpper()));
+        }
+        if (query.GradeMin.HasValue && query.GradeMin.Value >= 0 && query.GradeMin.Value <= 10)
+        {
+            students = students.Where(c => c.Grade >= query.GradeMin);
+        }
+        if (query.GradeMax.HasValue && query.GradeMax.Value >= 0 && query.GradeMax.Value <= 10)
+        {
+            students = students.Where(c => c.Grade <= query.GradeMax);
+        }
+        return await students.CountAsync();
     }
 }

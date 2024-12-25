@@ -111,7 +111,15 @@ public class StudentService : IStudentService
             Log.Error("Get list students failed. Students not found");
             return new ServiceResult(ResultType.NotFound, "Students not found");
         }
-        return new ServiceResult(_mapper.Map<List<StudentDto>>(students), "Get list students successfully");
+        int totalItems = await _studentRepository.GetTotalStudentsAsync(query);
+        var pagination = new {
+            TotalItems =totalItems,
+            CurrentPage = query.Page,
+            TotalPage = (int)Math.Ceiling(totalItems/ (double)query.ItemsPerPage),
+            ItemsPerPage = query.ItemsPerPage
+        };
+        
+        return new ServiceResult(_mapper.Map<List<StudentDto>>(students), "Get list students successfully",pagination);
     }
     public async Task<ServiceResult> GetStudentsByIdsAsync(List<int> ids)
     {

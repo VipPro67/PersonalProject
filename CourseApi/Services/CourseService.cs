@@ -49,7 +49,15 @@ public class CourseService : ICourseService
             Log.Error("No courses found");
             return new ServiceResult(ResultType.NotFound, "No courses found");
         }
-        return new ServiceResult(_mapper.Map<List<CourseDto>>(courses), "Get list course successfully");
+        int totalItems = await _courseRepository.GetTotalCoursesAsync(query);
+        var pagination = new {
+            TotalItems = totalItems,
+            CurrentPage = query.Page,
+            TotalPage = (int)Math.Ceiling(totalItems / (double)query.ItemsPerPage),
+            ItemsPerPage = query.ItemsPerPage
+        };
+        
+        return new ServiceResult(_mapper.Map<List<CourseDto>>(courses), "Get list course successfully", pagination);
     }
 
     public async Task<ServiceResult> GetCourseByCourseIdAsync(string courseId)

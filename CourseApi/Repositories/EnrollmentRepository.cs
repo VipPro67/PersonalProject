@@ -19,6 +19,8 @@ public interface IEnrollmentRepository
     Task<Enrollment?> CreateEnrollmentAsync(Enrollment enrollment);
 
     Task<bool> DeleteEnrollmentAsync(Enrollment enrollment);
+
+    Task<int> GetTotalEnrollmentsAsync(EnrollmentQuery query);
 }
 
 public class EnrollmentRepository : IEnrollmentRepository
@@ -100,5 +102,19 @@ public class EnrollmentRepository : IEnrollmentRepository
     public Task<bool> IsStudentEnrolledInCourseAsync(int studentId, string courseId)
     {
         return _context.Enrollments.AnyAsync(e => e.StudentId == studentId && e.CourseId == courseId.ToUpper());
+    }
+
+    public async Task<int> GetTotalEnrollmentsAsync(EnrollmentQuery query)
+    {
+        var enrollments = _context.Enrollments.AsQueryable();
+        if (query.StudentId.HasValue)
+        {
+            enrollments = enrollments.Where(e => e.StudentId == query.StudentId);
+        }
+        if (!string.IsNullOrWhiteSpace(query.CourseId))
+        {
+            enrollments = enrollments.Where(e => e.CourseId == query.CourseId.ToUpper());
+        }
+        return await enrollments.CountAsync();
     }
 }

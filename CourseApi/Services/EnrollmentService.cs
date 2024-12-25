@@ -60,7 +60,16 @@ public class EnrollmentService : IEnrollmentService
                 {
                     enrollments.ForEach(e => e.Student = apiResponse.Data.FirstOrDefault(s => s.StudentId == e.StudentId));
                 }
-                return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully");
+                int totalItems = await _enrollmentRepository.GetTotalEnrollmentsAsync(query);
+                var pagination = new
+                {
+                    TotalItems = totalItems,
+                    CurrentPage = query.Page,
+                    TotalPage = (int)Math.Ceiling(totalItems / (double)query.ItemsPerPage),
+                    ItemsPerPage = query.ItemsPerPage
+                };
+
+                return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully", pagination);
             }
             else
             {
@@ -209,10 +218,10 @@ public class EnrollmentService : IEnrollmentService
             var response = await studentApiClient.GetAsync($"api/students/{createEnrollmentDto.StudentId}");
             if (!response.IsSuccessStatusCode)
             {
-                if(response.StatusCode==System.Net.HttpStatusCode.NotFound)
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 {
-                Log.Error($"Student not found");
-                return new ServiceResult(ResultType.InternalServerError, $"StudentId {createEnrollmentDto.StudentId} not found");
+                    Log.Error($"Student not found");
+                    return new ServiceResult(ResultType.InternalServerError, $"StudentId {createEnrollmentDto.StudentId} not found");
 
                 }
                 Log.Error($"Failed to retrieve student with id {createEnrollmentDto.StudentId} from StudentApi: {response.StatusCode}");
