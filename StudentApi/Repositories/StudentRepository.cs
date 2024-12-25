@@ -96,10 +96,14 @@ public class StudentRepository : IStudentRepository
         {
             students = ApplySorting(students, query.SortBy, query.SortByDirection);
         }
-        if (query.Page.HasValue && query.ItemsPerPage.HasValue)
+        if (query.Page.HasValue && query.ItemsPerPage.HasValue & query.ItemsPerPage.Value > 0 & query.Page.Value > 0 && query.ItemsPerPage.Value <= 1000)
         {
             students = students.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
                           .Take(query.ItemsPerPage.Value);
+        }
+        else
+        {
+            students = students.Take(10);
         }
         // Log the query
         Log.Information($"GetStudentsAsync: {students.ToQueryString()}");

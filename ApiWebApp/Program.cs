@@ -46,8 +46,8 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddSwaggerForOcelot(builder.Configuration);
 var app = builder.Build();
-
 app.UseRouting(); 
+app.UseCors("Open");
 app.UseCustomMiddleware();
 app.UseGlobalExceptionHandling();
 app.UseAuthentication();

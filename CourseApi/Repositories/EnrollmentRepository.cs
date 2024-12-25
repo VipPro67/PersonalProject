@@ -54,8 +54,15 @@ public class EnrollmentRepository : IEnrollmentRepository
             enrollments = enrollments.Where(e => e.CourseId == query.CourseId.ToUpper());
         }
         enrollments = enrollments.OrderBy(e => e.EnrollmentId);
-
-        enrollments = enrollments.Skip((query.Page - 1) * query.Page).Take(query.ItemsPerPage);
+        if (query.Page.HasValue && query.ItemsPerPage.HasValue && query.ItemsPerPage.Value > 0 & query.Page.Value > 0 & query.ItemsPerPage.Value <= 1000)
+        {
+            enrollments = enrollments.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
+            .Take(query.ItemsPerPage.Value);
+        }
+        else
+        {
+            enrollments = enrollments.Take(10);
+        }
         return await enrollments.ToListAsync();
     }
 

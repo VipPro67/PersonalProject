@@ -99,10 +99,14 @@ public class CourseRepository : ICourseRepository
             courses = ApplySorting(courses, query.SortBy, query.SortByDirection);
         }
 
-        if (query.Page.HasValue && query.ItemsPerPage.HasValue && query.ItemsPerPage.Value > 0  & query.Page.Value > 0)
+        if (query.Page.HasValue && query.ItemsPerPage.HasValue && query.ItemsPerPage.Value > 0  & query.Page.Value > 0&&query.ItemsPerPage.Value <= 1000)
         {
             courses = courses.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
             .Take(query.ItemsPerPage.Value);
+        }
+        else
+        {
+            courses = courses.Take(10); 
         }
         return await courses.ToListAsync();
     }
