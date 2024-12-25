@@ -53,7 +53,7 @@ public class EnrollmentRepository : IEnrollmentRepository
         {
             enrollments = enrollments.Where(e => e.CourseId == query.CourseId.ToUpper());
         }
-        enrollments = enrollments.OrderBy(e => e.EnrollmentId);
+        enrollments = ApplySorting(enrollments, query.SortBy, query.SortByDirection);
         if (query.Page.HasValue && query.ItemsPerPage.HasValue && query.ItemsPerPage.Value > 0 & query.Page.Value > 0 & query.ItemsPerPage.Value <= 1000)
         {
             enrollments = enrollments.Skip((query.Page.Value - 1) * query.ItemsPerPage.Value)
@@ -66,6 +66,22 @@ public class EnrollmentRepository : IEnrollmentRepository
         return await enrollments.ToListAsync();
     }
 
+    private IQueryable<Enrollment> ApplySorting(IQueryable<Enrollment> enrollments, string sortBy, string? sortDirection)
+    {
+        bool isAscending = string.IsNullOrEmpty(sortDirection) || sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase);
+
+        switch (sortBy.ToLower())
+        {
+            case "enrollmentid":
+                return isAscending ? enrollments.OrderBy(e => e.EnrollmentId) : enrollments.OrderByDescending(e => e.EnrollmentId);
+            case "studentid":
+                return isAscending ? enrollments.OrderBy(e => e.StudentId) : enrollments.OrderByDescending(e => e.StudentId);
+            case "courseid":
+                return isAscending ? enrollments.OrderBy(e => e.CourseId) : enrollments.OrderByDescending(e => e.CourseId);
+            default:
+                return enrollments.OrderBy(e => e.EnrollmentId);
+        }
+    }
     public async Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync(string courseId)
     {
         return await _context.Enrollments.Include(e => e.Course).Where(e => e.CourseId == courseId.ToUpper()).ToListAsync();

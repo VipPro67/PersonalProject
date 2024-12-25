@@ -83,11 +83,11 @@ public class StudentRepository : IStudentRepository
             students = students.Where(c => c.Address.ToUpper().Contains(query.Address.ToUpper()));
         }
 
-        if (query.GradeMin.HasValue)
+        if (query.GradeMin.HasValue && query.GradeMin.Value >= 0 && query.GradeMin.Value <= 10)
         {
             students = students.Where(c => c.Grade >= query.GradeMin);
         }
-        if (query.GradeMax.HasValue)
+        if (query.GradeMax.HasValue && query.GradeMax.Value >= 0 && query.GradeMax.Value <= 10)
         {
             students = students.Where(c => c.Grade <= query.GradeMax);
         }

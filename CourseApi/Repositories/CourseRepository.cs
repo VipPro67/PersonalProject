@@ -65,11 +65,11 @@ public class CourseRepository : ICourseRepository
             courses = courses.Where(c => c.Department.ToUpper().Contains(query.Department.ToUpper()));
         }
 
-        if (query.CreditMin.HasValue)
+        if (query.CreditMin.HasValue && query.CreditMin.Value >= 0 && query.CreditMin.Value <= 10)
         {
             courses = courses.Where(c => c.Credit >= query.CreditMin);
         }
-        if (query.CreditMax.HasValue)
+        if (query.CreditMax.HasValue && query.CreditMax.Value >= 0)
         {
             courses = courses.Where(c => c.Credit <= query.CreditMax);
         }
