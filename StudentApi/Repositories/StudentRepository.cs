@@ -125,6 +125,8 @@ public class StudentRepository : IStudentRepository
                 return isAscending ? students.OrderBy(s => s.PhoneNumber) : students.OrderByDescending(s => s.PhoneNumber);
             case "address":
                 return isAscending ? students.OrderBy(s => s.Address) : students.OrderByDescending(s => s.Address);
+            case "dateofbirth":
+                return isAscending ? students.OrderBy(s => s.DateOfBirth) : students.OrderByDescending(s => s.DateOfBirth);
             case "grade":
                 return isAscending ? students.OrderBy(s => s.Grade) : students.OrderByDescending(s => s.Grade);
             default:
