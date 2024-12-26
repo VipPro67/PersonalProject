@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
      <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
-<NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625;CS8604;NETSDK1138;CS8613;CS8618;CS8603</NoWarn>  </PropertyGroup>
+<NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625;CS8604;NETSDK1138;CS8613;CS8618;CS8603;CS8601</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
@@ -13,11 +14,11 @@
     <PackageReference Include="FluentValidation" Version="11.11.0" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="HtmlSanitizer" Version="8.1.870" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.20" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="7.0.20" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.20" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.20" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.18">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -25,7 +26,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.18" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL.Design" Version="1.1.1" />
     <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
