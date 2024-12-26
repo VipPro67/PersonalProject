@@ -37,12 +37,17 @@ public class StudentService : IStudentService
         if (await _studentRepository.GetStudentByEmailAsync(createStudentDto.Email) != null)
         {
             Log.Error($"Create student failed. Student with email {createStudentDto.Email} already exists");
-            return new ServiceResult(ResultType.BadRequest, "Student with email already exists");
+            return new ServiceResult(ResultType.BadRequest, $"Student with email {createStudentDto.Email} already exists");
+        }
+        if (await _studentRepository.GetStudentByPhoneNumberAsync(createStudentDto.PhoneNumber) != null)
+        {
+            Log.Error($"Create student failed. Student with phoneNumber {createStudentDto.PhoneNumber} already exists");
+            return new ServiceResult(ResultType.BadRequest, $"Student with phoneNumber {createStudentDto.PhoneNumber} already exists");
         }
         var result = await _studentRepository.CreateStudentAsync(_mapper.Map<Student>(createStudentDto));
         return new ServiceResult(_mapper.Map<StudentDto>(result), "Create student successfully");
     }
-     public async Task<ServiceResult> DeleteStudentAsync(int studentId)
+    public async Task<ServiceResult> DeleteStudentAsync(int studentId)
     {
         var student = await _studentRepository.GetStudentByIdAsync(studentId);
         if (student == null)
@@ -106,7 +111,15 @@ public class StudentService : IStudentService
             Log.Error("Get list students failed. Students not found");
             return new ServiceResult(ResultType.NotFound, "Students not found");
         }
-        return new ServiceResult(_mapper.Map<List<StudentDto>>(students), "Get list students successfully");
+        int totalItems = await _studentRepository.GetTotalStudentsAsync(query);
+        var pagination = new {
+            TotalItems =totalItems,
+            CurrentPage = query.Page,
+            TotalPage = (int)Math.Ceiling(totalItems/ (double)query.ItemsPerPage),
+            ItemsPerPage = query.ItemsPerPage
+        };
+        
+        return new ServiceResult(_mapper.Map<List<StudentDto>>(students), "Get list students successfully",pagination);
     }
     public async Task<ServiceResult> GetStudentsByIdsAsync(List<int> ids)
     {
@@ -132,7 +145,16 @@ public class StudentService : IStudentService
             Log.Error($"Update student with id {id} failed. Student not found");
             return new ServiceResult(ResultType.NotFound, "Student not found");
         }
-
+        if (await _studentRepository.GetStudentByEmailAsync(updatedStudentDto.Email) != existingStudent)
+        {
+            Log.Error($"Update student failed. Student with email {updatedStudentDto.Email} already exists");
+            return new ServiceResult(ResultType.BadRequest, $"Student with email {updatedStudentDto.Email} already exists");
+        }
+        if (await _studentRepository.GetStudentByPhoneNumberAsync(updatedStudentDto.PhoneNumber) != existingStudent)
+        {
+            Log.Error($"Update student failed. Student with phoneNumber {updatedStudentDto.PhoneNumber} already exists");
+            return new ServiceResult(ResultType.BadRequest, $"Student with phoneNumber {updatedStudentDto.PhoneNumber} already exists");
+        }
         _mapper.Map(updatedStudentDto, existingStudent);
 
         var result = await _studentRepository.UpdateStudentAsync(existingStudent);

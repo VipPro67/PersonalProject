@@ -6,9 +6,7 @@ namespace AuthApi.Repositories
 {
     public interface IUserRepository
     {
-
         Task<AppUser?> GetAppUserByIdAsync(int id);
-
         Task<AppUser?> GetAppUserByEmailAsync(string email);
         Task<AppUser?> GetAppUserByUserNameAsync(string userName);
         Task<bool> IsUserExistAsync(string? email, string? userName);
@@ -31,17 +29,17 @@ namespace AuthApi.Repositories
 
         public async Task<AppUser?> GetAppUserByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email.ToUpper() == email.ToUpper());
         }
 
         public async Task<AppUser?> GetAppUserByUserNameAsync(string userName)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserName.ToUpper() == userName.ToUpper().Trim());
         }
 
         public async Task<bool> IsUserExistAsync(string? email, string? userName)
         {
-            return await _context.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower() || u.UserName.ToLower() == userName.ToLower());
+            return await _context.Users.AnyAsync(u => u.Email.ToUpper()==email.Trim().ToUpper()  || u.UserName.ToUpper()==userName.Trim().ToUpper());
         }
         public async Task<AppUser?> CreateAppUserAsync(AppUser appUser)
         {

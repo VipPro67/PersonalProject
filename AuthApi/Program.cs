@@ -104,7 +104,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAPIGateWay",
         builder => builder
-            .WithOrigins(Environment.GetEnvironmentVariable("APIGateWay"))
+            .WithOrigins(Environment.GetEnvironmentVariable("APIGateWay").Split(','))
             .AllowAnyHeader()
             .WithMethods("POST"));
 });

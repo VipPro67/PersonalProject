@@ -14,7 +14,8 @@
                 "GET",
                 "POST",
                 "PUT",
-                "DELETE"
+                "DELETE",
+                "OPTIONS"
             ],
             "SwaggerKey": "auth"
         },
@@ -24,7 +25,8 @@
                 "GET",
                 "POST",
                 "PUT",
-                "DELETE"
+                "DELETE",
+                "OPTIONS"
             ],
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
@@ -36,7 +38,10 @@
             "DownstreamPathTemplate": "/api/courses/{everything}",
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": []
+                "AllowedScopes": [
+                    "course-api",
+                    "all-api"
+                ]
             },
             "SwaggerKey": "courses"
         },
@@ -46,7 +51,8 @@
                 "GET",
                 "POST",
                 "PUT",
-                "DELETE"
+                "DELETE",
+                "OPTIONS"
             ],
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
@@ -58,7 +64,11 @@
             "DownstreamPathTemplate": "/api/enrollments/{everything}",
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": []
+                "AllowedScopes": [
+                    "course-api",
+                    "all-api",
+                    "enrollment-api"
+                ]
             },
             "SwaggerKey": "courses"
         },
@@ -68,7 +78,8 @@
                 "GET",
                 "POST",
                 "PUT",
-                "DELETE"
+                "DELETE",
+                "OPTIONS"
             ],
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
@@ -80,7 +91,10 @@
             "DownstreamPathTemplate": "/api/students/{everything}",
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": []
+                "AllowedScopes": [
+                    "student-api",
+                    "all-api"
+                ]
             },
             "SwaggerKey": "students"
         },
@@ -88,7 +102,8 @@
             "UpstreamPathTemplate": "/api/students",
             "UpstreamHttpMethod": [
                 "GET",
-                "POST"
+                "POST",
+                "OPTIONS"
             ],
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
@@ -100,7 +115,10 @@
             "DownstreamPathTemplate": "/api/students",
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": []
+                "AllowedScopes": [
+                    "student-api",
+                    "all-api"
+                ]
             },
             "SwaggerKey": "students"
         },
@@ -108,7 +126,8 @@
             "UpstreamPathTemplate": "/api/courses",
             "UpstreamHttpMethod": [
                 "GET",
-                "POST"
+                "POST",
+                "OPTIONS"
             ],
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
@@ -120,7 +139,10 @@
             "DownstreamPathTemplate": "/api/courses",
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": []
+                "AllowedScopes": [
+                    "course-api",
+                    "all-api"
+                ]
             },
             "SwaggerKey": "courses"
         },
@@ -128,7 +150,8 @@
             "UpstreamPathTemplate": "/api/enrollments",
             "UpstreamHttpMethod": [
                 "GET",
-                "POST"
+                "POST",
+                "OPTIONS"
             ],
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
@@ -140,7 +163,11 @@
             "DownstreamPathTemplate": "/api/enrollments",
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": []
+                "AllowedScopes": [
+                    "all-api",
+                    "enrollment-api",
+                    "course-api"
+                ]
             },
             "SwaggerKey": "enrollments"
         }
@@ -178,7 +205,24 @@
         }
     ],
     "GlobalConfiguration": {
-        "BaseUrl": "http://localhost:5000"
+        "BaseUrl": "http://localhost:5000",
+        "Cors": {
+            "AllowedOrigins": [
+                "*"
+            ],
+            "AllowedMethods": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
+            ],
+            "AllowedHeaders": [
+                "Content-Type",
+                "Authorization",
+                "Accept-Language"
+            ]
+        }
     },
     "Logging": {
         "LogLevel": {

@@ -10,7 +10,7 @@ namespace CourseApi.Helpers
             {
                 case ResultType.Ok:
                     {
-                        return controller.Ok(new SuccessResponse(200, result.Message, result.Data));
+                        return controller.Ok(new SuccessResponse(200, result.Message, result.Data, result.Pagination));
                     }
                 case ResultType.BadRequest:
                     {

@@ -28,18 +28,13 @@ namespace AuthApi.Controllers
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            var modelState = ModelState.IsValid;
             var result = await _authService.Register(registerDto);
             if (!result.Success)
             {
                 return BadRequest(new ErrorResponse(400, _localization[ResourceKey.RegistrationFailed], _localization[result.Message].Value.ToString()));
             }
             Log.Information($"User {registerDto.UserName} registered successfully", registerDto.UserName);
-            return Ok(new SuccessResponse(200, _localization[ResourceKey.RegistrationSuccessful], new
-            {
-                result.AccessToken,
-                result.RefreshToken
-            }));
+            return Ok(new SuccessResponse(200, _localization[ResourceKey.RegistrationSuccessful], null));
         }
 
         [HttpPost]

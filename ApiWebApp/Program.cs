@@ -4,8 +4,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Serilog;
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
     .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
@@ -42,8 +45,8 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddSwaggerForOcelot(builder.Configuration);
 var app = builder.Build();
-
 app.UseRouting(); 
+app.UseCors("Open");
 app.UseCustomMiddleware();
 app.UseGlobalExceptionHandling();
 app.UseAuthentication();

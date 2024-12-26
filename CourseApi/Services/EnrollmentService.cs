@@ -60,7 +60,16 @@ public class EnrollmentService : IEnrollmentService
                 {
                     enrollments.ForEach(e => e.Student = apiResponse.Data.FirstOrDefault(s => s.StudentId == e.StudentId));
                 }
-                return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully");
+                int totalItems = await _enrollmentRepository.GetTotalEnrollmentsAsync(query);
+                var pagination = new
+                {
+                    TotalItems = totalItems,
+                    CurrentPage = query.Page,
+                    TotalPage = (int)Math.Ceiling(totalItems / (double)query.ItemsPerPage),
+                    ItemsPerPage = query.ItemsPerPage
+                };
+
+                return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully", pagination);
             }
             else
             {
@@ -169,9 +178,9 @@ public class EnrollmentService : IEnrollmentService
                 return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
             }
             var responseContent = await response.Content.ReadAsStringAsync();
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new DateOnlyJsonConverter());
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new DateOnlyJsonConverter());
+            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
             if (apiResponse?.Data == null || apiResponse.Data.StudentId != studentId)
             {
                 Log.Error("Some thing wrong with student info");
@@ -209,17 +218,26 @@ public class EnrollmentService : IEnrollmentService
             var response = await studentApiClient.GetAsync($"api/students/{createEnrollmentDto.StudentId}");
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    Log.Error($"Student not found");
+                    return new ServiceResult(ResultType.InternalServerError, $"StudentId {createEnrollmentDto.StudentId} not found");
+
+                }
                 Log.Error($"Failed to retrieve student with id {createEnrollmentDto.StudentId} from StudentApi: {response.StatusCode}");
                 return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
             }
             var responseContent = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent);
+            var settings = new JsonSerializerSettings();
+            settings.Converters.Add(new DateOnlyJsonConverter());
+            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
             if (apiResponse?.Data == null || apiResponse.Data.StudentId != createEnrollmentDto.StudentId)
             {
                 Log.Error("Some thing wrong with student info");
                 return new ServiceResult(ResultType.BadRequest, "Some thing wrong with student info");
             }
             var enrollment = _mapper.Map<Enrollment>(createEnrollmentDto);
+            enrollment.Student = apiResponse.Data;
             var result = await _enrollmentRepository.CreateEnrollmentAsync(enrollment);
             if (result == null)
             {

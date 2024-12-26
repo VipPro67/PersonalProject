@@ -14,6 +14,8 @@ public class CourseQuery
     // public DateOnly? EndDateMax { get; set; } = null;
     public string? Schedule { get; set; } = null;
 
+    public string? SortBy { get; set; } = "CourseId";
+    public string? SortByDirection { get; set; } = "asc";
     public int? Page { get; set; } = 1;
     public int? ItemsPerPage { get; set; } = 10;
 }
