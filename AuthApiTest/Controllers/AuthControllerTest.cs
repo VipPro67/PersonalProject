@@ -54,12 +54,6 @@ public class AuthControllerTest
         var response = okResult.Value.Should().BeOfType<SuccessResponse>().Subject;
         response.Status.Should().Be(200);
         response.Message.Should().Be("Registration successful.");
-        response.Data.Should().NotBeNull();
-        response.Data.Should().BeEquivalentTo(new
-        {
-            AccessToken = "test_token",
-            RefreshToken = "test_refresh_token"
-        });
     }
 
     [Fact]

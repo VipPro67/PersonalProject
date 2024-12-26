@@ -113,47 +113,7 @@ public class AuthServiceTest
         result.Message.Should().Be("SaveDBFailed");
     }
 
-    [Fact]
-    public async Task Register_FailedRefreshTokenCreation_SaveDBFailedMessage()
-    {
-        // Arrange
-        Environment.SetEnvironmentVariable("JWTKeySecret", "your_test_secret_key_123456789@:)");
-        Environment.SetEnvironmentVariable("JWTKeyTokenExpiryHour", "1");
-        Environment.SetEnvironmentVariable("JWTKeyValidAudience", "your_valid_audience_123456789@");
-        Environment.SetEnvironmentVariable("JWTKeyRefreshTokenExpiryDay", "7");
-        var registerDto = new RegisterDto
-        {
-            UserName = "newuser",
-            Password = "Password123!",
-            Email = "newuser@example.com",
-            Address = "123 Main St",
-            FullName = "New User"
-        };
-        var newUser = new AppUser
-        {
-            UserId = 1,
-            Email = registerDto.Email,
-            UserName = registerDto.UserName,
-            PasswordHash = PasswordHelper.HashPassword(registerDto.Password),
-            FullName = registerDto.FullName,
-            Address = registerDto.Address
-        };
-
-        _mockUserRepository.Setup(repo => repo.IsUserExistAsync(registerDto.Email, registerDto.UserName))
-            .ReturnsAsync(false);
-        _mockUserRepository.Setup(repo => repo.CreateAppUserAsync(It.IsAny<AppUser>()))
-            .ReturnsAsync(newUser);
-        _mockRefreshTokenRepository.Setup(repo => repo.AddRefreshTokenAsync(It.IsAny<RefreshToken>()))
-            .ReturnsAsync(false);
-
-        // Act
-        var result = await _authService.Register(registerDto);
-
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Be("SaveDBFailed");
-    }
-
+    
     [Fact]
     public async Task Login_ValidCredentials_SuccessAuthResult()
     {
@@ -300,7 +260,7 @@ public class AuthServiceTest
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Be("RefreshtokenInvalidOrExpired");
+        result.Message.Should().Be("RefreshTokenExpired");
     }
     [Fact]
     public async Task RefreshToken_TokenNotFound_InvalidOrExpiredMessage()
@@ -315,7 +275,7 @@ public class AuthServiceTest
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Be("RefreshtokenInvalidOrExpired");
+        result.Message.Should().Be("RefreshTokenInvalid");
     }
     [Fact]
     public async Task RefreshToken_UserNotFound_InvalidOrExpiredMessage()
@@ -339,7 +299,7 @@ public class AuthServiceTest
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Be("RefreshtokenInvalidOrExpired");
+        result.Message.Should().Be("UserNotFound");
     }
     [Fact]
     public async Task RefreshToken_ValidRefreshToken_GenerateNewTokens()

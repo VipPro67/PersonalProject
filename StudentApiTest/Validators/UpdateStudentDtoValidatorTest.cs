@@ -36,17 +36,25 @@ public class UpdateStudentDtoValidatorTest
     public void UpdateStudentDtoValidator_EmptyFields_FailValidation()
     {
         // Arrange
-        var updateStudentDto = new UpdateStudentDto();
+        var updateStudentDto = new UpdateStudentDto{
+            StudentId = 0,
+            Email = "",
+            FullName = "",
+            PhoneNumber = "",
+            Address = "",
+            DateOfBirth = new DateOnly(),
+            Grade = 0
+        };
 
         // Act
         var result = _validator.TestValidate(updateStudentDto);
 
         // Assert
         result.ShouldHaveValidationErrorFor(s => s.Email).WithErrorMessage("Email is required");
-        result.ShouldHaveValidationErrorFor(s => s.FullName).WithErrorMessage("FullName is required");
-        result.ShouldHaveValidationErrorFor(s => s.PhoneNumber).WithErrorMessage("PhoneNumber is required");
+        result.ShouldHaveValidationErrorFor(s => s.FullName).WithErrorMessage("Full Name is required");
+        result.ShouldHaveValidationErrorFor(s => s.PhoneNumber).WithErrorMessage("Phone Number is required");
         result.ShouldHaveValidationErrorFor(s => s.Grade).WithErrorMessage("Grade is required");
-        result.ShouldHaveValidationErrorFor(s => s.DateOfBirth).WithErrorMessage("DateOfBirth is required");
+        result.ShouldHaveValidationErrorFor(s => s.DateOfBirth).WithErrorMessage("Date Of Birth is required");
     }
     [Fact]
     public void UpdateStudentDtoValidator_InvalidEmailFormat_FailValidation()
@@ -86,7 +94,7 @@ public class UpdateStudentDtoValidatorTest
         var result = _validator.TestValidate(updateStudentDto);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(s => s.PhoneNumber).WithErrorMessage("PhoneNumber should only contain numeric characters");
+        result.ShouldHaveValidationErrorFor(s => s.PhoneNumber).WithErrorMessage("Phone Number should only contain numeric characters");
     }
 
     [Fact]
@@ -107,7 +115,7 @@ public class UpdateStudentDtoValidatorTest
         var result = _validator.TestValidate(updateStudentDto);
 
         // Assert
-        result.ShouldHaveValidationErrorFor(s => s.DateOfBirth).WithErrorMessage("DateOfBirth should be a date in the past");
+        result.ShouldHaveValidationErrorFor(s => s.DateOfBirth).WithErrorMessage("Date Of Birth should be a date in the past");
     }
 
     [Theory]
@@ -150,9 +158,9 @@ public class UpdateStudentDtoValidatorTest
 
         // Assert
         result.ShouldHaveValidationErrorFor(s => s.Email).WithErrorMessage("Email should not exceed 100 characters");
-        result.ShouldHaveValidationErrorFor(s => s.PhoneNumber).WithErrorMessage("PhoneNumber should not exceed 20 characters");
+        result.ShouldHaveValidationErrorFor(s => s.PhoneNumber).WithErrorMessage("Phone Number should not exceed 20 characters");
         result.ShouldHaveValidationErrorFor(s => s.Address).WithErrorMessage("Address should not exceed 100 characters");
-        result.ShouldHaveValidationErrorFor(s => s.FullName).WithErrorMessage("FullName should not exceed 100 characters");
+        result.ShouldHaveValidationErrorFor(s => s.FullName).WithErrorMessage("Full Name should not exceed 100 characters");
     }
 }
 

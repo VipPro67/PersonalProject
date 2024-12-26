@@ -11,22 +11,21 @@ public class CreateStudentDtoValidator : AbstractValidator<CreateStudentDto>
             .EmailAddress().WithMessage("Email is not in a valid format")
             .MaximumLength(100).WithMessage("Email should not exceed 100 characters")
             .Must(s => !s.Contains('<') && !s.Contains('>') && !s.Contains('&')).WithMessage("Email should not contain HTML tags");
-;
 
         RuleFor(x => x.FullName)
-            .NotEmpty().WithMessage("FullName is required")
-            .MaximumLength(100).WithMessage("FullName should not exceed 100 characters")
-            .Matches(@"^[a-zA-Z\s]*$").WithMessage("FullName should only contain alphanumeric and spaces")
-            .Must(s => !s.Contains('<') && !s.Contains('>') && !s.Contains('&')).WithMessage("FullName should not contain HTML tags");
+            .NotEmpty().WithMessage("Full Name is required")
+            .MaximumLength(100).WithMessage("Full Name should not exceed 100 characters")
+            .Matches(@"^[a-zA-Z\s]*$").WithMessage("Full Name should only contain alphanumeric and spaces")
+            .Must(s => !s.Contains('<') && !s.Contains('>') && !s.Contains('&')).WithMessage("Full Name should not contain HTML tags");
 
         RuleFor(x => x.PhoneNumber)
-            .NotEmpty().WithMessage("PhoneNumber is required")
-            .MaximumLength(20).WithMessage("PhoneNumber should not exceed 20 characters")
-            .Matches(@"^\d{10}$").WithMessage("PhoneNumber should only contain numeric characters");
+            .NotEmpty().WithMessage("Phone Number is required")
+            .MaximumLength(20).WithMessage("Phone Number should not exceed 20 characters")
+            .Matches(@"^\d{10}$").WithMessage("Phone Number should only contain numeric characters");
 
         RuleFor(x => x.DateOfBirth)
-            .NotEmpty().WithMessage("DateOfBirth is required")
-            .LessThan(DateOnly.FromDateTime(DateTime.Now)).WithMessage("DateOfBirth should be a date in the past");
+            .NotEmpty().WithMessage("Date Of Birth is required")
+            .LessThan(DateOnly.FromDateTime(DateTime.Now)).WithMessage("Date Of Birth should be a date in the past");
 
         RuleFor(x => x.Grade)
             .NotEmpty().WithMessage("Grade is required")

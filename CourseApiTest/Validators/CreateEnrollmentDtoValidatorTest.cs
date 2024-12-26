@@ -35,7 +35,7 @@ public class CreateEnrollmentDtoApiValidatorTest
         // Act
         var result = _validator.TestValidate(createEnrollmentDto);
         // Assert
-        result.ShouldHaveValidationErrorFor(e => e.CourseId).WithErrorMessage("CourseId is required");
+        result.ShouldHaveValidationErrorFor(e => e.CourseId).WithErrorMessage("Course ID is required");
         result.ShouldHaveValidationErrorFor(e => e.StudentId).WithErrorMessage("StudentId is required");
     }
 

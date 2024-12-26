@@ -42,14 +42,14 @@ public class CreateCourseApiValidatorTest
         // Act
         var result = _validator.TestValidate(createCourseDto);
         // Assert
-        result.ShouldHaveValidationErrorFor(s => s.CourseId).WithErrorMessage("CourseId is required");
-        result.ShouldHaveValidationErrorFor(s => s.CourseName).WithErrorMessage("CourseName is required");
-        result.ShouldHaveValidationErrorFor(s => s.Description).WithErrorMessage("CourseDescription is required");
+        result.ShouldHaveValidationErrorFor(s => s.CourseId).WithErrorMessage("Course ID is required");
+        result.ShouldHaveValidationErrorFor(s => s.CourseName).WithErrorMessage("Course Name is required");
+        result.ShouldHaveValidationErrorFor(s => s.Description).WithErrorMessage("Course Description is required");
         result.ShouldHaveValidationErrorFor(s => s.Credit).WithErrorMessage("Credit is required");
         result.ShouldHaveValidationErrorFor(s => s.Department).WithErrorMessage("Department is required");
-        result.ShouldHaveValidationErrorFor(s => s.Instructor).WithErrorMessage("InstructorName is required");
-        result.ShouldHaveValidationErrorFor(s => s.StartDate).WithErrorMessage("StartDate is required");
-        result.ShouldHaveValidationErrorFor(s => s.EndDate).WithErrorMessage("EndDate is required");
+        result.ShouldHaveValidationErrorFor(s => s.Instructor).WithErrorMessage("Instructor is required");
+        result.ShouldHaveValidationErrorFor(s => s.StartDate).WithErrorMessage("Start Date is required");
+        result.ShouldHaveValidationErrorFor(s => s.EndDate).WithErrorMessage("End Date is required");
     }
 
     [Theory]
@@ -121,12 +121,12 @@ public class CreateCourseApiValidatorTest
         // Act
         var result = _validator.TestValidate(createCourseDto);
         // Assert
-        result.ShouldHaveValidationErrorFor(c=>c.CourseId).WithErrorMessage("CourseId should not exceed 10 characters");
-        result.ShouldHaveValidationErrorFor(c=>c.CourseName).WithErrorMessage("CourseName should not exceed 100 characters");
-        result.ShouldHaveValidationErrorFor(c=>c.Description).WithErrorMessage("CourseDescription should not exceed 500 characters");
+        result.ShouldHaveValidationErrorFor(c=>c.CourseId).WithErrorMessage("Course ID should not exceed 10 characters");
+        result.ShouldHaveValidationErrorFor(c=>c.CourseName).WithErrorMessage("Course Name should not exceed 100 characters");
+        result.ShouldHaveValidationErrorFor(c=>c.Description).WithErrorMessage("Course Description should not exceed 500 characters");
         result.ShouldHaveValidationErrorFor(c=>c.Credit).WithErrorMessage("Credit should be less than or equal to 10");
-        result.ShouldHaveValidationErrorFor(c=>c.Department).WithErrorMessage("DepartmentName should not exceed 50 characters");
-        result.ShouldHaveValidationErrorFor(c=>c.Instructor).WithErrorMessage("InstructorName should not exceed 100 characters");
+        result.ShouldHaveValidationErrorFor(c=>c.Department).WithErrorMessage("Department should not exceed 50 characters");
+        result.ShouldHaveValidationErrorFor(c=>c.Instructor).WithErrorMessage("Instructor should not exceed 100 characters");
         result.ShouldHaveValidationErrorFor(c=>c.Schedule).WithErrorMessage("Schedule should not exceed 100 characters");
     }
 

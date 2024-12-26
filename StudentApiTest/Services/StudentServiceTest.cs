@@ -52,7 +52,7 @@ public class StudentServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Type.Should().Be(ResultType.BadRequest);
-        result.Message.Should().Be("Student with email already exists");
+        result.Message.Should().Be($"Student with email {existingStudent.Email} already exists");
         _mockStudentRepository.Verify(repo => repo.GetStudentByEmailAsync(createStudentDto.Email), Times.Once);
         _mockStudentRepository.Verify(repo => repo.CreateStudentAsync(It.IsAny<Student>()), Times.Never);
     }
@@ -458,6 +458,8 @@ public class StudentServiceTests
             PhoneNumber = "0987654321"
         };
         _mockStudentRepository.Setup(repo => repo.GetStudentByIdAsync(studentId)).ReturnsAsync(student);
+        _mockStudentRepository.Setup(repo => repo.GetStudentByEmailAsync(updateStudentDto.Email)).ReturnsAsync((Student)null);
+        _mockStudentRepository.Setup(repo => repo.GetStudentByPhoneNumberAsync(updateStudentDto.PhoneNumber)).ReturnsAsync((Student)null);
         _mockStudentRepository.Setup(repo => repo.UpdateStudentAsync(updatedStudent)).ReturnsAsync(updatedStudent);
 
         var result = await _studentService.UpdateStudentAsync(studentId, updateStudentDto);

@@ -112,14 +112,15 @@ public class StudentService : IStudentService
             return new ServiceResult(ResultType.NotFound, "Students not found");
         }
         int totalItems = await _studentRepository.GetTotalStudentsAsync(query);
-        var pagination = new {
-            TotalItems =totalItems,
+        var pagination = new
+        {
+            TotalItems = totalItems,
             CurrentPage = query.Page,
-            TotalPage = (int)Math.Ceiling(totalItems/ (double)query.ItemsPerPage),
+            TotalPage = (int)Math.Ceiling(totalItems / (double)query.ItemsPerPage),
             ItemsPerPage = query.ItemsPerPage
         };
-        
-        return new ServiceResult(_mapper.Map<List<StudentDto>>(students), "Get list students successfully",pagination);
+
+        return new ServiceResult(_mapper.Map<List<StudentDto>>(students), "Get list students successfully", pagination);
     }
     public async Task<ServiceResult> GetStudentsByIdsAsync(List<int> ids)
     {
@@ -145,12 +146,14 @@ public class StudentService : IStudentService
             Log.Error($"Update student with id {id} failed. Student not found");
             return new ServiceResult(ResultType.NotFound, "Student not found");
         }
-        if (await _studentRepository.GetStudentByEmailAsync(updatedStudentDto.Email) != existingStudent)
+        var studentByEmail = await _studentRepository.GetStudentByEmailAsync(updatedStudentDto.Email);
+        if (studentByEmail != null && studentByEmail.StudentId != existingStudent.StudentId)
         {
             Log.Error($"Update student failed. Student with email {updatedStudentDto.Email} already exists");
             return new ServiceResult(ResultType.BadRequest, $"Student with email {updatedStudentDto.Email} already exists");
         }
-        if (await _studentRepository.GetStudentByPhoneNumberAsync(updatedStudentDto.PhoneNumber) != existingStudent)
+        var studentByPhoneNumber = await _studentRepository.GetStudentByPhoneNumberAsync(updatedStudentDto.PhoneNumber);
+        if (studentByPhoneNumber != null && studentByPhoneNumber.StudentId != existingStudent.StudentId)
         {
             Log.Error($"Update student failed. Student with phoneNumber {updatedStudentDto.PhoneNumber} already exists");
             return new ServiceResult(ResultType.BadRequest, $"Student with phoneNumber {updatedStudentDto.PhoneNumber} already exists");
