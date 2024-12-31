@@ -1,12 +1,30 @@
+using System.Security.Cryptography.X509Certificates;
 using ApiWebApp.Middlewares;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.IdentityModel.Tokens;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Serilog;
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
+var certPath = Environment.GetEnvironmentVariable("CertPath");
+var certPassword = Environment.GetEnvironmentVariable("CertPassword");
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+        {
+            ServerCertificate = new X509Certificate2(certPath, certPassword),
+            SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+        });
+    });
+});
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 builder.Configuration.SetBasePath(builder.Environment.ContentRootPath)
@@ -45,7 +63,8 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddSwaggerForOcelot(builder.Configuration);
 var app = builder.Build();
-app.UseRouting(); 
+app.UseHttpsRedirection();
+app.UseRouting();
 app.UseCors("Open");
 app.UseCustomMiddleware();
 app.UseGlobalExceptionHandling();

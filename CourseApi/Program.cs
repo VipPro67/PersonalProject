@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using CourseApi.Data;
 using CourseApi.DTOs;
 using CourseApi.Filters;
@@ -8,7 +9,10 @@ using CourseApi.Repositories;
 using CourseApi.Services;
 using DotNetEnv;
 using FluentValidation;
+using Grpc.Net.Client;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
@@ -16,6 +20,20 @@ using Serilog;
 
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
+var certPath = Environment.GetEnvironmentVariable("CertPath");
+var certPassword = Environment.GetEnvironmentVariable("CertPassword");
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5001, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+        {
+            ServerCertificate = new X509Certificate2(certPath, certPassword),
+            SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+        });
+    });
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -53,7 +71,14 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 
+builder.Services.AddSingleton(services =>
+{
+    var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
+    var channel = GrpcChannel.ForAddress(studentApiUrl);
+    return new CourseApi.Protos.StudentService.StudentServiceClient(channel);
+});
 builder.Services.AddFluentValidationAutoValidation()
+
     .AddFluentValidationClientsideAdapters()
     .AddValidatorsFromAssemblyContaining<CreateCourseDto>()
     .AddValidatorsFromAssemblyContaining<UpdateCourseDto>()
@@ -69,6 +94,7 @@ builder.Services.AddControllers(option =>
     {
         options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
     });
+builder.Services.AddGrpc();
 /*
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
 var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");
@@ -108,7 +134,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
 app.UseRouting();
 app.UseCors("AllowCors");
 app.UseUserInfoLogging();
@@ -118,6 +143,7 @@ app.UseSerilogRequestLogging();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();
+app.MapGrpcService<EnrollmentGrpcService>();
 //app.UseAuthentication();
 //app.UseAuthorization();
 app.Run();

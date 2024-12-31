@@ -1,9 +1,11 @@
 using System.Net;
 using AutoMapper;
+using Grpc.Net.Client;
 using Serilog;
 using StudentApi.DTOs;
 using StudentApi.Helpers;
 using StudentApi.Models;
+using StudentApi.Protos;
 using StudentApi.Repositories;
 namespace StudentApi.Services;
 public interface IStudentService
@@ -57,25 +59,23 @@ public class StudentService : IStudentService
         }
         try
         {
-            var courseApiUrl = Environment.GetEnvironmentVariable("CourseApiUrl");
-            var courseApiClient = CreateHttpClient();
-            var response = await courseApiClient.GetAsync($"api/enrollments/students/{studentId}");
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            var request = new CheckStudentEnrollmentRequest { StudentId = studentId };
+            var channel = GrpcChannel.ForAddress(Environment.GetEnvironmentVariable("CourseApiUrl"), new GrpcChannelOptions
             {
-                Log.Information($"No enrollments found for student id {studentId}");
-                await _studentRepository.DeleteStudentAsync(student);
-                return new ServiceResult(ResultType.Ok, "Delete student successfully");
-            }
-            else if (response.IsSuccessStatusCode)
+                HttpHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                }
+            });
+            var client = new EnrollmentService.EnrollmentServiceClient(channel);
+            var response = await client.CheckStudentEnrollmentAsync(request);
+            if (response.IsEnrolled)  //this return true false
             {
-                Log.Error($"Delete student with id {studentId} failed. Student has enrollments");
-                return new ServiceResult(ResultType.BadRequest, "Student has enrollments");
+                Log.Error($"Delete student with id {studentId} failed. Student is enrolled in a course");
+                return new ServiceResult(ResultType.BadRequest, "Student is enrolled in a course");
             }
-            else
-            {
-                Log.Error($"Failed to delete student with id {studentId} from CourseApi: {response.StatusCode}");
-                return new ServiceResult(ResultType.InternalServerError, "Error deleting student from CourseApi");
-            }
+            await _studentRepository.DeleteStudentAsync(student);
+            return new ServiceResult(ResultType.Ok, "Delete student successfully");
         }
         catch (Exception e)
         {

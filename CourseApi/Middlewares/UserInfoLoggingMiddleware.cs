@@ -14,10 +14,10 @@ public class UserInfoLoggingMiddleware
     {
         //var userId = context.Request.Headers["X-UserId"].FirstOrDefault();
         var userName = context.Request.Headers["X-UserName"].FirstOrDefault();
-       // var email = context.Request.Headers["X-Email"].FirstOrDefault();
+        // var email = context.Request.Headers["X-Email"].FirstOrDefault();
 
         //Log.Information("User Info - UserId: {UserId}, UserName: {UserName}, Email: {Email}", userId, userName, email);
-       // using (LogContext.PushProperty("UserId", userId))
+        // using (LogContext.PushProperty("UserId", userId))
         using (LogContext.PushProperty("UserName", userName))
         //using (LogContext.PushProperty("Email", email))
         {

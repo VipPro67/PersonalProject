@@ -44,7 +44,7 @@ public class CreateCourseDtoValidator : AbstractValidator<CreateCourseDto>
 
         RuleFor(x => x.EndDate)
             .NotEmpty().WithMessage("End Date is required");
-        
+
         RuleFor(x => x.Schedule)
             .NotEmpty().WithMessage("Schedule is required")
             .MaximumLength(100).WithMessage("Schedule should not exceed 100 characters");

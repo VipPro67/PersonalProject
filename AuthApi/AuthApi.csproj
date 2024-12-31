@@ -4,8 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
-     <NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625;CS8604;NETSDK1138;CS8618</NoWarn>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <NoWarn>$(NoWarn);CS8602;CS1998;CS8600;CS4014;CS4014;CS8625;CS8604;NETSDK1138;CS8618</NoWarn>
     <EmbeddedResourceUseDependentUponConvention>true</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>
 
@@ -37,7 +37,15 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
   </ItemGroup>
 
-<ItemGroup> <EmbeddedResource Update="LoginDto.en-US.resx"> <DependentUpon>LoginDto.cs</DependentUpon> </EmbeddedResource> </ItemGroup>
-<ItemGroup> <EmbeddedResource Update="LoginDto.vi-VN.resx"> <DependentUpon>LoginDto.cs</DependentUpon> </EmbeddedResource> </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="LoginDto.en-US.resx">
+      <DependentUpon>LoginDto.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="LoginDto.vi-VN.resx">
+      <DependentUpon>LoginDto.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
 
 </Project>

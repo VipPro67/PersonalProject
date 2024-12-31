@@ -1,6 +1,9 @@
+using System.Security.Cryptography.X509Certificates;
 using DotNetEnv;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
@@ -16,6 +19,21 @@ using StudentApi.Services;
 
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
+var certPath = Environment.GetEnvironmentVariable("CertPath");
+var certPassword = Environment.GetEnvironmentVariable("CertPassword");
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5002, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+        {
+            ServerCertificate = new X509Certificate2(certPath, certPassword),
+            SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+        });
+    });
+});
+builder.Services.AddGrpc();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
 {
@@ -104,7 +122,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
 app.UseRouting();
 app.UseCors("AllowCors");
 app.UseUserInfoLogging();
@@ -114,6 +131,7 @@ app.UseSerilogRequestLogging();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();
+app.MapGrpcService<GrpcStudentService>();
 //app.UseAuthentication();
 //app.UseAuthorization();
 app.Run();

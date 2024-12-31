@@ -4,7 +4,10 @@ using CourseApi.Helpers;
 using CourseApi.Models;
 using CourseApi.Repositories;
 using Newtonsoft.Json;
+using Grpc.Net.Client;
 using Serilog;
+using CourseApi.Protos;
+using Grpc.Core;
 
 namespace CourseApi.Services;
 
@@ -22,9 +25,11 @@ public class EnrollmentService : IEnrollmentService
 {
     private readonly ICourseRepository _courseRepository;
     private readonly IEnrollmentRepository _enrollmentRepository;
-
     private readonly IMapper _mapper;
-    public EnrollmentService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository, IMapper mapper)
+    public EnrollmentService(
+          ICourseRepository courseRepository,
+          IEnrollmentRepository enrollmentRepository,
+          IMapper mapper)
     {
         _courseRepository = courseRepository;
         _enrollmentRepository = enrollmentRepository;
@@ -40,47 +45,59 @@ public class EnrollmentService : IEnrollmentService
         var enrollments = await _enrollmentRepository.GetAllEnrollmentsAsync(query);
         if (enrollments == null || enrollments.Count == 0)
         {
-            Log.Error("No enrollments found");
+            Log.Warning("No enrollments found");
             return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
-        var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        var studentApiClient = CreateHttpClient();
-        var ids = enrollments.Select(e => e.StudentId).Distinct().ToList();
+
+        var ids = enrollments.Select(e => e.StudentId).Where(id => id.HasValue).Select(id => id.Value).Distinct().ToList();
         try
         {
-            var response = await studentApiClient.GetAsync($"api/students/ids?ids={string.Join("&ids=", ids)}");
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
+            var request = new GetStudentsByIdsRequest();
+            request.StudentIds.AddRange(ids);
+            var channel = GrpcChannel.ForAddress(Environment.GetEnvironmentVariable("StudentApiUrl"), new GrpcChannelOptions
             {
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new DateOnlyJsonConverter());
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent, settings);
-                if (apiResponse?.Data != null)
+                HttpHandler = new HttpClientHandler
                 {
-                    enrollments.ForEach(e => e.Student = apiResponse.Data.FirstOrDefault(s => s.StudentId == e.StudentId));
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 }
-                int totalItems = await _enrollmentRepository.GetTotalEnrollmentsAsync(query);
-                var pagination = new
-                {
-                    TotalItems = totalItems,
-                    CurrentPage = query.Page,
-                    TotalPage = (int)Math.Ceiling(totalItems / (double)query.ItemsPerPage),
-                    ItemsPerPage = query.ItemsPerPage
-                };
+            });
+            var client = new StudentService.StudentServiceClient(channel);
+            var response = await client.GetStudentsByIdsAsync(request);
 
-                return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully", pagination);
-            }
-            else
+            if (response != null && response.Students.Any())
             {
-                Log.Error($"Failed to retrieve students from StudentApi: {response.StatusCode}");
-                return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+                foreach (var enrollment in enrollments)
+                {
+                    var student = response.Students.FirstOrDefault(s => s.StudentId == enrollment.StudentId);
+                    if (student != null)
+                    {
+                        enrollment.Student = new Student
+                        {
+                            StudentId = student.StudentId,
+                            FullName = student.Name,
+                            Email = student.Email,
+                            PhoneNumber = student.PhoneNumber
+                        };
+                    }
+                }
             }
+
+            int totalItems = await _enrollmentRepository.GetTotalEnrollmentsAsync(query);
+            var pagination = new
+            {
+                TotalItems = totalItems,
+                CurrentPage = query.Page,
+                TotalPage = (int)Math.Ceiling(totalItems / (double)query.ItemsPerPage),
+                ItemsPerPage = query.ItemsPerPage
+            };
+
+            return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully", pagination);
         }
+
         catch (Exception e)
         {
-            Log.Error($"Error retrieving students from StudentApi: {e.Message}");
-            return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+            Log.Error(e, "Error retrieving students from StudentApi");
+            return new ServiceResult(ResultType.InternalServerError, $"Error retrieving students from StudentApi: {e.Message}");
         }
     }
     public async Task<ServiceResult> GetEnrollmentByIdAsync(int enrollmentId)
@@ -93,26 +110,36 @@ public class EnrollmentService : IEnrollmentService
         }
         try
         {
-            var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-            var studentApiClient = CreateHttpClient();
-            var response = await studentApiClient.GetAsync($"api/students/{enrollment.StudentId}");
-            if (response.IsSuccessStatusCode)
+            if (enrollment.StudentId.HasValue)
             {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new DateOnlyJsonConverter());
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
-                if (apiResponse?.Data != null)
+                var request = new GetStudentByIdRequest { StudentId = enrollment.StudentId.Value };
+                var channel = GrpcChannel.ForAddress(Environment.GetEnvironmentVariable("StudentApiUrl"), new GrpcChannelOptions
                 {
-                    enrollment.Student = apiResponse.Data;
+                    HttpHandler = new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                    }
+                });
+                var client = new StudentService.StudentServiceClient(channel);
+                var response = await client.GetStudentByIdAsync(request);
+
+                if (response != null)
+                {
+                    enrollment.Student = new Student
+                    {
+                        StudentId = response.StudentId,
+                        FullName = response.Name,
+                        Email = response.Email,
+                        PhoneNumber = response.PhoneNumber
+                    };
                 }
-                return new ServiceResult(_mapper.Map<EnrollmentDto>(enrollment), "Get enrollment by id successfully");
             }
-            else
-            {
-                Log.Error($"Failed to retrieve student from StudentApi: {response.StatusCode}");
-                return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
-            }
+            return new ServiceResult(_mapper.Map<EnrollmentDto>(enrollment), "Get enrollment by id successfully");
+        }
+        catch (RpcException e)
+        {
+            Log.Error(e, "gRPC error retrieving students from StudentApi");
+            return new ServiceResult(ResultType.InternalServerError, $"gRPC error retrieving students from StudentApi: {e.Status.Detail}");
         }
         catch (Exception e)
         {
@@ -120,6 +147,7 @@ public class EnrollmentService : IEnrollmentService
             return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
         }
     }
+
 
     public async Task<ServiceResult> GetEnrollmentsByCourseIdAsync(string courseId)
     {
@@ -129,34 +157,45 @@ public class EnrollmentService : IEnrollmentService
             Log.Error("No enrollments found");
             return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
-        var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        var studentApiClient = CreateHttpClient();
-        var ids = enrollments.Select(e => e.StudentId).Distinct().ToList();
+        var ids = enrollments.Select(e => e.StudentId).Where(id => id.HasValue).Select(id => id.Value).Distinct().ToList();
         try
         {
-            var response = await studentApiClient.GetAsync($"api/students/ids?ids={string.Join("&ids=", ids)}");
-            var responseContent = await response.Content.ReadAsStringAsync();
-            if (response.IsSuccessStatusCode)
+            var request = new GetStudentsByIdsRequest();
+            request.StudentIds.AddRange(ids);
+            var channel = GrpcChannel.ForAddress(Environment.GetEnvironmentVariable("StudentApiUrl"), new GrpcChannelOptions
             {
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new DateOnlyJsonConverter());
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent, settings);
-                if (apiResponse?.Data != null)
+                HttpHandler = new HttpClientHandler
                 {
-                    enrollments.ForEach(e => e.Student = apiResponse.Data.FirstOrDefault(s => s.StudentId == e.StudentId));
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 }
-                return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get enrollments by course id successfully");
-            }
-            else
+            });
+            var client = new StudentService.StudentServiceClient(channel);
+            var response = await client.GetStudentsByIdsAsync(request);
+
+            if (response != null && response.Students.Any())
             {
-                Log.Error($"Failed to retrieve students from StudentApi: {response.StatusCode}");
-                return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+                foreach (var enrollment in enrollments)
+                {
+                    var student = response.Students.FirstOrDefault(s => s.StudentId == enrollment.StudentId);
+                    if (student != null)
+                    {
+                        enrollment.Student = new Student
+                        {
+                            StudentId = student.StudentId,
+                            FullName = student.Name,
+                            Email = student.Email,
+                            PhoneNumber = student.PhoneNumber
+                        };
+                    }
+                }
             }
+            return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully");
         }
+
         catch (Exception e)
         {
-            Log.Error($"Error retrieving students from StudentApi: {e.Message}");
-            return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+            Log.Error(e, "Error retrieving students from StudentApi");
+            return new ServiceResult(ResultType.InternalServerError, $"Error retrieving students from StudentApi: {e.Message}");
         }
     }
     public async Task<ServiceResult> GetEnrollmentsByStudentIdAsync(int studentId)
@@ -167,33 +206,38 @@ public class EnrollmentService : IEnrollmentService
             Log.Error("No enrollments found");
             return new ServiceResult(ResultType.NotFound, "No enrollments found");
         }
-        var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        var studentApiClient = CreateHttpClient();
         try
         {
-            var response = await studentApiClient.GetAsync($"api/students/{studentId}");
-            if (!response.IsSuccessStatusCode)
+            var request = new GetStudentByIdRequest { StudentId = studentId };
+            var channel = GrpcChannel.ForAddress(Environment.GetEnvironmentVariable("StudentApiUrl"), new GrpcChannelOptions
             {
-                Log.Error($"Failed to retrieve student with id {studentId} from StudentApi: {response.StatusCode}");
-                return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
-            }
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var settings = new JsonSerializerSettings();
-            settings.Converters.Add(new DateOnlyJsonConverter());
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
-            if (apiResponse?.Data == null || apiResponse.Data.StudentId != studentId)
+                HttpHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                }
+            });
+            var client = new StudentService.StudentServiceClient(channel);
+            var response = await client.GetStudentByIdAsync(request);
+            if (response != null)
             {
-                Log.Error("Some thing wrong with student info");
-                return new ServiceResult(ResultType.InternalServerError, "Some thing wrong with student info");
+                foreach (var enrollment in enrollments)
+                {
+                    enrollment.Student = new Student
+                    {
+                        StudentId = response.StudentId,
+                        FullName = response.Name,
+                        Email = response.Email,
+                        PhoneNumber = response.PhoneNumber
+                    };
+                }
             }
-            var enrollmentsWithStudent = await _enrollmentRepository.GetEnrollmentsByStudentIdAsync(studentId);
-            enrollmentsWithStudent.ForEach(e => e.Student = apiResponse.Data);
-            return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollmentsWithStudent), "Get enrollments by student id successfully");
+            return new ServiceResult(_mapper.Map<List<EnrollmentDto>>(enrollments), "Get all enrollments successfully");
         }
+
         catch (Exception e)
         {
-            Log.Error($"Error retrieving student from StudentApi: {e.Message}");
-            return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
+            Log.Error(e, "Error retrieving students from StudentApi");
+            return new ServiceResult(ResultType.InternalServerError, $"Error retrieving students from StudentApi: {e.Message}");
         }
     }
 
@@ -205,52 +249,46 @@ public class EnrollmentService : IEnrollmentService
             Log.Error($"Course with id {createEnrollmentDto.CourseId} not found");
             return new ServiceResult(ResultType.NotFound, "Course not found");
         }
-        var isEnroll = await _enrollmentRepository.IsStudentEnrolledInCourseAsync(createEnrollmentDto.StudentId, createEnrollmentDto.CourseId);
-        if (isEnroll)
+        //check enrollment exists
+        var query = new EnrollmentQuery { StudentId = createEnrollmentDto.StudentId, CourseId = createEnrollmentDto.CourseId };
+        var enrollments = await _enrollmentRepository.GetAllEnrollmentsAsync(query);
+        if (enrollments != null && enrollments.Count > 0)
         {
-            Log.Error($"Student with id {createEnrollmentDto.StudentId} is already enrolled in course with id {createEnrollmentDto.CourseId}");
-            return new ServiceResult(ResultType.BadRequest, "Student is already enrolled in the course");
+            Log.Error("Student already enrolled in course");
+            return new ServiceResult(ResultType.BadRequest, "Student already enrolled in course");
         }
         try
         {
-            var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-            var studentApiClient = CreateHttpClient();
-            var response = await studentApiClient.GetAsync($"api/students/{createEnrollmentDto.StudentId}");
-            if (!response.IsSuccessStatusCode)
+            var request = new GetStudentByIdRequest { StudentId = createEnrollmentDto.StudentId };
+            var channel = GrpcChannel.ForAddress(Environment.GetEnvironmentVariable("StudentApiUrl"), new GrpcChannelOptions
             {
-                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                HttpHandler = new HttpClientHandler
                 {
-                    Log.Error($"Student not found");
-                    return new ServiceResult(ResultType.InternalServerError, $"StudentId {createEnrollmentDto.StudentId} not found");
-
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 }
-                Log.Error($"Failed to retrieve student with id {createEnrollmentDto.StudentId} from StudentApi: {response.StatusCode}");
-                return new ServiceResult(ResultType.InternalServerError, "Error retrieving student from StudentApi");
-            }
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var settings = new JsonSerializerSettings();
-            settings.Converters.Add(new DateOnlyJsonConverter());
-            var apiResponse = JsonConvert.DeserializeObject<ApiResponse<Student>>(responseContent, settings);
-            if (apiResponse?.Data == null || apiResponse.Data.StudentId != createEnrollmentDto.StudentId)
+            });
+            var client = new StudentService.StudentServiceClient(channel);
+            var response = await client.GetStudentByIdAsync(request);
+            if (response == null)
             {
-                Log.Error("Some thing wrong with student info");
-                return new ServiceResult(ResultType.BadRequest, "Some thing wrong with student info");
+                Log.Error($"Student with id {createEnrollmentDto.StudentId} not found");
+                return new ServiceResult(ResultType.NotFound, "Student not found");
             }
             var enrollment = _mapper.Map<Enrollment>(createEnrollmentDto);
-            enrollment.Student = apiResponse.Data;
             var result = await _enrollmentRepository.CreateEnrollmentAsync(enrollment);
             if (result == null)
             {
-                Log.Error("Failed to create enrollment");
-                return new ServiceResult(ResultType.InternalServerError, "Failed to create enrollment");
+                Log.Error("Failed to enroll student in course");
+                return new ServiceResult(ResultType.InternalServerError, "Failed to enroll student in course");
             }
-            return new ServiceResult(_mapper.Map<EnrollmentDto>(enrollment), "Enroll student in course successfully");
+            return new ServiceResult(true, "Enroll student in course successfully");
         }
         catch (Exception e)
         {
-            Log.Error($"Error retrieving students from StudentApi: {e.Message}");
-            return new ServiceResult(ResultType.InternalServerError, "Failed to create enrollment");
+            Log.Error(e, "Error retrieving students from StudentApi");
+            return new ServiceResult(ResultType.InternalServerError, $"Error retrieving students from StudentApi: {e.Message}");
         }
+
     }
     public async Task<ServiceResult> DeleteEnrollmentAsync(int enrollmentId)
     {

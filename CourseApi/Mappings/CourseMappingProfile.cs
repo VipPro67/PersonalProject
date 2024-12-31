@@ -12,7 +12,7 @@ public class CourseMappingProfile : Profile
             .ForMember(dest => dest.CourseName, opt => opt.MapFrom(src => src.CourseName.Trim()))
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => HandleHTML.SanitizeAndEncodeHTML(src.Description)))
             .ForMember(dest => dest.Schedule, opt => opt.MapFrom(src => HandleHTML.SanitizeAndEncodeHTML(src.Schedule)));
-            
+
         CreateMap<Course, CourseDto>()
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => HandleHTML.DecodeHTMLEntities(src.Description)))
             .ForMember(dest => dest.Schedule, opt => opt.MapFrom(src => HandleHTML.DecodeHTMLEntities(src.Schedule)));

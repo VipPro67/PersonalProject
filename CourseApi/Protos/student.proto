@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option csharp_namespace = "CourseApi.Protos";
+
+package student;
+
+service StudentService {
+  rpc GetStudentById (GetStudentByIdRequest) returns (StudentResponse);
+  rpc GetStudentsByIds (GetStudentsByIdsRequest) returns (StudentsResponse);
+}
+
+message GetStudentByIdRequest {
+  int32 student_id = 1;
+}
+
+message GetStudentsByIdsRequest {
+  repeated int32 student_ids = 1;
+}
+
+message StudentResponse {
+  int32 student_id = 1;
+  string name = 2;
+  string email = 3;
+  string phone_number = 4;
+}
+
+message StudentsResponse {
+  repeated StudentResponse students = 1;
+}

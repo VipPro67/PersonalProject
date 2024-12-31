@@ -8,7 +8,7 @@ namespace StudentApi.Controllers
 {
     [Route("api/students")]
     [ApiController]
-        [EnableCors("AllowCors")]
+    [EnableCors("AllowCors")]
 
     public class StudentController : ControllerBase
     {
