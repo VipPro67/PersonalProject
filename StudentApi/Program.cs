@@ -2,6 +2,7 @@ using System.Security.Cryptography.X509Certificates;
 using DotNetEnv;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Grpc.Net.Client;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +68,11 @@ builder.Host.UseSerilog((context, configuration) =>
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStringW")));
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
-
+builder.Services.AddTransient<StudentApi.Protos.EnrollmentService.EnrollmentServiceClient>(provider =>
+{
+    var channel = provider.GetRequiredService<GrpcChannel>();
+    return new StudentApi.Protos.EnrollmentService.EnrollmentServiceClient(channel);
+});
 builder.Services.AddFluentValidationAutoValidation()
     .AddFluentValidationClientsideAdapters()
     .AddValidatorsFromAssemblyContaining<CreateStudentDto>()

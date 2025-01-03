@@ -9,25 +9,22 @@ using StudentApi.Models;
 using System.Net;
 using StudentApi.Helpers;
 using Moq.Protected;
+using Grpc.Core;
 namespace StudentApiTest.Services;
 public class StudentServiceTests
 {
     private readonly Mock<IStudentRepository> _mockStudentRepository;
     private readonly Mock<IMapper> _mockMapper;
-    private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
-    private readonly HttpClient _httpClient;
-    private readonly Mock<StudentService> _mockStudentService;
+
+    private readonly Mock<StudentApi.Protos.EnrollmentService.EnrollmentServiceClient> _mockEnrollmentServiceClient;
     private readonly StudentService _studentService;
     public StudentServiceTests()
     {
         _mockStudentRepository = new Mock<IStudentRepository>();
         _mockMapper = new Mock<IMapper>();
-        _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        _httpClient = new HttpClient(_mockHttpMessageHandler.Object)
-        { BaseAddress = new Uri("https://localhost:5001") };
-        _mockStudentService = new Mock<StudentService>(_mockStudentRepository.Object, _mockMapper.Object) { CallBase = true };
-        _mockStudentService.Setup(s => s.CreateHttpClient()).Returns(_httpClient);
-        _studentService = new StudentService(_mockStudentRepository.Object, _mockMapper.Object);
+        _mockEnrollmentServiceClient = new Mock<StudentApi.Protos.EnrollmentService.EnrollmentServiceClient>();
+
+        _studentService = new StudentService(_mockStudentRepository.Object, _mockMapper.Object, _mockEnrollmentServiceClient.Object);
     }
 
     [Fact]
@@ -105,16 +102,18 @@ public class StudentServiceTests
         var student = new Student { StudentId = studentId };
         Environment.SetEnvironmentVariable("CourseApiUrl", "https://localhost:5001");
         _mockStudentRepository.Setup(repo => repo.GetStudentByIdAsync(studentId)).ReturnsAsync(student);
-        _mockHttpMessageHandler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync",
-         ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-         .ReturnsAsync(new HttpResponseMessage
-         {
-             StatusCode = HttpStatusCode.NotFound,
-         });
+        _mockEnrollmentServiceClient.Setup(client => client.CheckStudentEnrollmentAsync(It.IsAny<StudentApi.Protos.CheckStudentEnrollmentRequest>(), null, null, default))
+            .Returns(new AsyncUnaryCall<StudentApi.Protos.CheckStudentEnrollmentResponse>(
+                Task.FromResult(new StudentApi.Protos.CheckStudentEnrollmentResponse { IsEnrolled = false }),
+                Task.FromResult(new Metadata()),
+                () => Status.DefaultSuccess,
+                () => new Metadata(),
+                () => { }
+            ));
         _mockStudentRepository.Setup(repo => repo.DeleteStudentAsync(student)).ReturnsAsync(true);
 
         // Act
-        var result = await _mockStudentService.Object.DeleteStudentAsync(studentId);
+        var result = await _studentService.DeleteStudentAsync(studentId);
 
         // Assert
         result.Should().NotBeNull();
@@ -150,19 +149,21 @@ public class StudentServiceTests
         };
         Environment.SetEnvironmentVariable("CourseApiUrl", "https://localhost:5001");
         _mockStudentRepository.Setup(repo => repo.GetStudentByIdAsync(studentId)).ReturnsAsync(student);
-        _mockHttpMessageHandler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync",
-         ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-         .ReturnsAsync(new HttpResponseMessage
-         {
-             StatusCode = HttpStatusCode.OK,
-             Content = new StringContent(JsonConvert.SerializeObject(enrollments))
-         });
-        // Act 
-        var result = await _mockStudentService.Object.DeleteStudentAsync(studentId);
+        _mockEnrollmentServiceClient.Setup(client => client.CheckStudentEnrollmentAsync(It.IsAny<StudentApi.Protos.CheckStudentEnrollmentRequest>(), null, null, default))
+            .Returns(new AsyncUnaryCall<StudentApi.Protos.CheckStudentEnrollmentResponse>(
+                Task.FromResult(new StudentApi.Protos.CheckStudentEnrollmentResponse { IsEnrolled = true }),
+                Task.FromResult(new Metadata()),
+                () => Status.DefaultSuccess,
+                () => new Metadata(),
+                () => { }
+            ));
+        _mockStudentRepository.Setup(repo => repo.DeleteStudentAsync(student)).ReturnsAsync(false);
+        // Act
+        var result = await _studentService.DeleteStudentAsync(studentId);
         // Assert 
         result.Should().NotBeNull();
         result.Type.Should().Be(ResultType.BadRequest);
-        result.Message.Should().Be("Student has enrollments");
+        result.Message.Should().Be("Student is enrolled in a course");
     }
 
 
@@ -174,13 +175,17 @@ public class StudentServiceTests
         var student = new Student { StudentId = studentId };
 
         _mockStudentRepository.Setup(repo => repo.GetStudentByIdAsync(studentId)).ReturnsAsync(student);
-        _mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>()
-            )
-            .ThrowsAsync(new Exception());
+        _mockEnrollmentServiceClient.Setup(client => client.CheckStudentEnrollmentAsync(It.IsAny<StudentApi.Protos.CheckStudentEnrollmentRequest>(), null, null, default))
+            .Returns<StudentApi.Protos.CheckStudentEnrollmentRequest, Metadata, DateTime?, CancellationToken>((request, metadata, deadline, cancellationToken) =>
+            {
+                return new AsyncUnaryCall<StudentApi.Protos.CheckStudentEnrollmentResponse>(
+                    Task.FromException<StudentApi.Protos.CheckStudentEnrollmentResponse>(new RpcException(new Status(StatusCode.Internal, "Error"))),
+                    Task.FromResult(new Metadata()),
+                    () => Status.DefaultSuccess,
+                    () => new Metadata(),
+                    () => { }
+                );
+            });
 
         // Act
         var result = await _studentService.DeleteStudentAsync(studentId);
@@ -348,7 +353,7 @@ public class StudentServiceTests
     {
         // Arrange
         var ids = new List<int> { 1, 2 };
-        var students = new List<Student>{};
+        var students = new List<Student> { };
         _mockStudentRepository.Setup(repo => repo.GetStudentsByIdsAsync(ids)).ReturnsAsync(students);
 
         // Act

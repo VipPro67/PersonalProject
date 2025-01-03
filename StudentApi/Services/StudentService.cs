@@ -22,17 +22,15 @@ public interface IStudentService
 public class StudentService : IStudentService
 {
     private readonly IStudentRepository _studentRepository;
+
+    private readonly EnrollmentService.EnrollmentServiceClient _enrollmentServiceClient;
     private readonly IMapper _mapper;
 
-    public StudentService(IStudentRepository studentRepository, IMapper mapper)
+    public StudentService(IStudentRepository studentRepository, IMapper mapper, EnrollmentService.EnrollmentServiceClient enrollmentServiceClient)
     {
         _studentRepository = studentRepository;
         _mapper = mapper;
-    }
-    public virtual HttpClient CreateHttpClient()
-    {
-        var courseApiUrl = Environment.GetEnvironmentVariable("CourseApiUrl");
-        return new HttpClient { BaseAddress = new Uri(courseApiUrl) };
+        _enrollmentServiceClient = enrollmentServiceClient;
     }
     public async Task<ServiceResult> CreateStudentAsync(CreateStudentDto createStudentDto)
     {
@@ -60,15 +58,7 @@ public class StudentService : IStudentService
         try
         {
             var request = new CheckStudentEnrollmentRequest { StudentId = studentId };
-            var channel = GrpcChannel.ForAddress(Environment.GetEnvironmentVariable("CourseApiUrl"), new GrpcChannelOptions
-            {
-                HttpHandler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                }
-            });
-            var client = new EnrollmentService.EnrollmentServiceClient(channel);
-            var response = await client.CheckStudentEnrollmentAsync(request);
+            var response = await _enrollmentServiceClient.CheckStudentEnrollmentAsync(request);
             if (response.IsEnrolled)  //this return true false
             {
                 Log.Error($"Delete student with id {studentId} failed. Student is enrolled in a course");
