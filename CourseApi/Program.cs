@@ -71,12 +71,24 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 
-builder.Services.AddSingleton(services =>
+builder.Services.AddSingleton(provider =>
 {
     var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-    var channel = GrpcChannel.ForAddress(studentApiUrl);
+    return GrpcChannel.ForAddress(studentApiUrl, new GrpcChannelOptions
+    {
+        HttpHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        }
+    });
+});
+
+builder.Services.AddTransient<CourseApi.Protos.StudentService.StudentServiceClient>(provider =>
+{
+    var channel = provider.GetRequiredService<GrpcChannel>();
     return new CourseApi.Protos.StudentService.StudentServiceClient(channel);
 });
+
 builder.Services.AddFluentValidationAutoValidation()
 
     .AddFluentValidationClientsideAdapters()

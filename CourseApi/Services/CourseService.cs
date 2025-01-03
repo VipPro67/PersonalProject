@@ -27,23 +27,15 @@ public class CourseService : ICourseService
     private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IMapper _mapper;
 
-    public CourseService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository, IMapper mapper)
+    private readonly StudentService.StudentServiceClient _studentServiceClient;
+
+    public CourseService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository, IMapper mapper, StudentService.StudentServiceClient studentServiceClient)
     {
         _courseRepository = courseRepository;
         _enrollmentRepository = enrollmentRepository;
+        _studentServiceClient = studentServiceClient;
         _mapper = mapper;
     }
-    public virtual HttpClient CreateHttpClient()
-    {
-        var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        if (string.IsNullOrEmpty(studentApiUrl))
-        {
-            Log.Error("StudentApiUrl environment variable is not set or empty");
-            return null;
-        }
-        return new HttpClient { BaseAddress = new Uri(studentApiUrl) };
-    }
-
     public async Task<ServiceResult> GetCoursesAsync(CourseQuery query)
     {
         var courses = await _courseRepository.GetAllCoursesAsync(query);
@@ -128,21 +120,12 @@ public class CourseService : ICourseService
             return new ServiceResult(ResultType.NotFound, "No enrollment found");
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        var studentApiClient = CreateHttpClient();
         var ids = enrollments.Select(e => e.StudentId).Where(id => id.HasValue).Select(id => id.Value).Distinct().ToList();
         try
         {
             var request = new GetStudentsByIdsRequest();
             request.StudentIds.AddRange(ids);
-            var channel = GrpcChannel.ForAddress(Environment.GetEnvironmentVariable("StudentApiUrl"), new GrpcChannelOptions
-            {
-                HttpHandler = new HttpClientHandler
-                {
-                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                }
-            });
-            var client = new StudentService.StudentServiceClient(channel);
-            var response = await client.GetStudentsByIdsAsync(request);
+            var response = await _studentServiceClient.GetStudentsByIdsAsync(request);
             if (response != null && response.Students.Any())
             {
                 var students = response.Students.Select(s => new StudentDto

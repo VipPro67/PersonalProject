@@ -11,7 +11,7 @@ public interface IEnrollmentRepository
     
     Task<Enrollment?> GetEnrollmentByIdAsync(int enrollmentId);
 
-    Task<bool> IsStudentHasEnrollmentAsync(int enrollmentId, string courseId);
+    Task<bool> IsStudentEnrolledInCourseAsync(int studentId, string courseId);
 
     Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync(string courseId);
 
@@ -102,7 +102,7 @@ public class EnrollmentRepository : IEnrollmentRepository
         return await _context.Enrollments.Include(e => e.Course).FirstOrDefaultAsync(e => e.EnrollmentId == enrollmentId);
     }
 
-    public Task<bool> IsStudentHasEnrollmentAsync(int studentId, string courseId)
+    public Task<bool> IsStudentEnrolledInCourseAsync(int studentId, string courseId)
     {
         return _context.Enrollments.AnyAsync(e => e.StudentId == studentId && e.CourseId == courseId.ToUpper());
     }
