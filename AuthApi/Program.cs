@@ -17,11 +17,27 @@ using AuthApi.Middlewares;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Localization;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
+using System.Security.Cryptography.X509Certificates;
 
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
-
+var certPath = Environment.GetEnvironmentVariable("CertPath");
+var certPassword = Environment.GetEnvironmentVariable("CertPassword");
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5005, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+        {
+            ServerCertificate = new X509Certificate2(certPath, certPassword),
+            SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13
+        });
+    });
+});
 // Serilog configuration
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
@@ -53,7 +69,7 @@ builder.Services.AddSwaggerGen(option =>
             new string[]{}
         }
     });
-});builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStringW")));
+}); builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStringW")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();

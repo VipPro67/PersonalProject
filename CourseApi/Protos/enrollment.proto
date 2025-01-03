@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option csharp_namespace = "CourseApi.Protos";
+
+package enrollment;
+
+service EnrollmentService {
+  rpc CheckStudentEnrollment (CheckStudentEnrollmentRequest) returns (CheckStudentEnrollmentResponse);
+}
+
+message CheckStudentEnrollmentRequest {
+  int32 student_id = 1;
+}
+
+message CheckStudentEnrollmentResponse {
+  bool is_enrolled = 1;
+}

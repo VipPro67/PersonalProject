@@ -33,7 +33,7 @@ public class ValidateModelStateFilter : IActionFilter
                 kvp => char.ToLower(kvp.Key[0]) + kvp.Key.Substring(1),
                 kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
             );
-    
+
         Log.Error("Validation failed for request: {0}", context.HttpContext.Request.Path);
 
         var errorMessage = _localization[ResourceKey.ValidationFailed];

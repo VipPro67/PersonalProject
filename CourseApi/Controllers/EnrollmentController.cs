@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CourseApi.Controllers;
 [Route("api/enrollments")]
 [ApiController]
-    [EnableCors("AllowCors")]
+[EnableCors("AllowCors")]
 
 public class EnrollmentController : ControllerBase
 {
@@ -18,7 +18,7 @@ public class EnrollmentController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllEnrollmentsAsync([FromQuery]EnrollmentQuery query)
+    public async Task<IActionResult> GetAllEnrollmentsAsync([FromQuery] EnrollmentQuery query)
     {
         var result = await _enrollmentService.GetAllEnrollmentsAsync(query);
         return this.ToActionResult(result);

@@ -8,9 +8,10 @@ namespace CourseApi.Repositories;
 public interface IEnrollmentRepository
 {
     Task<List<Enrollment>?> GetAllEnrollmentsAsync(EnrollmentQuery query);
+    
     Task<Enrollment?> GetEnrollmentByIdAsync(int enrollmentId);
 
-    Task<bool> IsStudentEnrolledInCourseAsync(int enrollmentId, string courseId);
+    Task<bool> IsStudentEnrolledInCourseAsync(int studentId, string courseId);
 
     Task<List<Enrollment>?> GetEnrollmentsByCourseIdAsync(string courseId);
 
@@ -19,6 +20,8 @@ public interface IEnrollmentRepository
     Task<Enrollment?> CreateEnrollmentAsync(Enrollment enrollment);
 
     Task<bool> DeleteEnrollmentAsync(Enrollment enrollment);
+
+    Task<bool> IsStudentHasEnrollmentAsync(int studentId);
 
     Task<int> GetTotalEnrollmentsAsync(EnrollmentQuery query);
 }
@@ -117,4 +120,9 @@ public class EnrollmentRepository : IEnrollmentRepository
         }
         return await enrollments.CountAsync();
     }
+    public async Task<bool> IsStudentHasEnrollmentAsync(int studentId)
+    {
+        return await _context.Enrollments.AnyAsync(e => e.StudentId == studentId);
+    }
+
 }

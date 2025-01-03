@@ -2,8 +2,11 @@
 using CourseApi.DTOs;
 using CourseApi.Helpers;
 using CourseApi.Models;
+using CourseApi.Protos;
 using CourseApi.Repositories;
 using Ganss.Xss;
+using Grpc.Core;
+using Grpc.Net.Client;
 using Newtonsoft.Json;
 using Serilog;
 
@@ -24,23 +27,15 @@ public class CourseService : ICourseService
     private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IMapper _mapper;
 
-    public CourseService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository, IMapper mapper)
+    private readonly StudentService.StudentServiceClient _studentServiceClient;
+
+    public CourseService(ICourseRepository courseRepository, IEnrollmentRepository enrollmentRepository, IMapper mapper, StudentService.StudentServiceClient studentServiceClient)
     {
         _courseRepository = courseRepository;
         _enrollmentRepository = enrollmentRepository;
+        _studentServiceClient = studentServiceClient;
         _mapper = mapper;
     }
-    public virtual HttpClient CreateHttpClient()
-    {
-        var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        if (string.IsNullOrEmpty(studentApiUrl))
-        {
-            Log.Error("StudentApiUrl environment variable is not set or empty");
-            return null;
-        }
-        return new HttpClient { BaseAddress = new Uri(studentApiUrl) };
-    }
-
     public async Task<ServiceResult> GetCoursesAsync(CourseQuery query)
     {
         var courses = await _courseRepository.GetAllCoursesAsync(query);
@@ -50,13 +45,14 @@ public class CourseService : ICourseService
             return new ServiceResult(ResultType.NotFound, "No courses found");
         }
         int totalItems = await _courseRepository.GetTotalCoursesAsync(query);
-        var pagination = new {
+        var pagination = new
+        {
             TotalItems = totalItems,
             CurrentPage = query.Page,
             TotalPage = (int)Math.Ceiling(totalItems / (double)query.ItemsPerPage),
             ItemsPerPage = query.ItemsPerPage
         };
-        
+
         return new ServiceResult(_mapper.Map<List<CourseDto>>(courses), "Get list course successfully", pagination);
     }
 
@@ -124,23 +120,30 @@ public class CourseService : ICourseService
             return new ServiceResult(ResultType.NotFound, "No enrollment found");
         }
         var studentApiUrl = Environment.GetEnvironmentVariable("StudentApiUrl");
-        var studentApiClient = CreateHttpClient();
-        var ids = enrollments.Select(x => x.StudentId).ToList();
+        var ids = enrollments.Select(e => e.StudentId).Where(id => id.HasValue).Select(id => id.Value).Distinct().ToList();
         try
         {
-            var response = await studentApiClient.GetAsync($"api/students/ids?ids={string.Join("&ids=", ids)}");
-            var responseContent = await response.Content.ReadAsStringAsync();
-            if (response.IsSuccessStatusCode)
+            var request = new GetStudentsByIdsRequest();
+            request.StudentIds.AddRange(ids);
+            var response = await _studentServiceClient.GetStudentsByIdsAsync(request);
+            if (response != null && response.Students.Any())
             {
-                var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new DateOnlyJsonConverter());
-                var apiResponse = JsonConvert.DeserializeObject<ApiResponse<List<Student>>>(responseContent, settings);
-                if (apiResponse?.Data != null)
-                    return new ServiceResult(_mapper.Map<List<StudentDto>>(apiResponse.Data), "Get list student in course successfully");
+                var students = response.Students.Select(s => new StudentDto
+                {
+                    StudentId = s.StudentId,
+                    FullName = s.Name,
+                    Email = s.Email,
+                    PhoneNumber = s.PhoneNumber
+                }).ToList();
+                return new ServiceResult(students, "Get students by course id successfully");
             }
-            Log.Error($"Failed to retrieve students from StudentApi: {response.StatusCode}");
-            return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
+            return new ServiceResult(ResultType.NotFound, "No students found");
 
+        }
+        catch (RpcException e)
+        {
+            Log.Error($"Error retrieving students from StudentApi: {e.Message}");
+            return new ServiceResult(ResultType.InternalServerError, "Error retrieving students from StudentApi");
         }
         catch (Exception e)
         {

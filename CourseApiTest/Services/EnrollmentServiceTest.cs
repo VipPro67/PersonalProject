@@ -15,37 +15,27 @@ public class EnrollmentServiceTests
     private readonly Mock<ICourseRepository> _mockCourseRepository;
     private readonly Mock<IEnrollmentRepository> _mockEnrollmentRepository;
     private readonly Mock<IMapper> _mockMapper;
-    private readonly Mock<HttpMessageHandler> _mockHttpMessageHandler;
-    private readonly EnrollmentService _enrollmentService;
-    private readonly Mock<EnrollmentService> _mockEnrollmentService;
 
+    private readonly Mock<CourseApi.Protos.StudentService.StudentServiceClient> _mockStudentServiceClient;
+    private readonly EnrollmentService _enrollmentService;
     public EnrollmentServiceTests()
     {
         _mockCourseRepository = new Mock<ICourseRepository>();
         _mockEnrollmentRepository = new Mock<IEnrollmentRepository>();
         _mockMapper = new Mock<IMapper>();
-        _mockHttpMessageHandler = new Mock<HttpMessageHandler>();
-        var httpClient = new HttpClient(_mockHttpMessageHandler.Object)
-        {
-            BaseAddress = new Uri("https://fakeapi.com")
-        };
+        _mockStudentServiceClient = new Mock<CourseApi.Protos.StudentService.StudentServiceClient>();
         _enrollmentService = new EnrollmentService(
             _mockCourseRepository.Object,
             _mockEnrollmentRepository.Object,
-            _mockMapper.Object
+            _mockMapper.Object,
+            _mockStudentServiceClient.Object
         );
-        _mockEnrollmentService = new Mock<EnrollmentService>(_mockCourseRepository.Object, _mockEnrollmentRepository.Object, _mockMapper.Object)
-        {
-            CallBase = true
-        };
-        _mockEnrollmentService.Setup(s => s.CreateHttpClient()).Returns(httpClient);
-
     }
     [Fact]
     public async Task GetAllEnrollmentsAsync_NoEnrollments_NotFound()
     {
         // Arrange
-        var query = new EnrollmentQuery{};
+        var query = new EnrollmentQuery { };
         _mockEnrollmentRepository.Setup(r => r.GetAllEnrollmentsAsync(query))
                                  .ReturnsAsync(new List<Enrollment>());
 
@@ -63,39 +53,49 @@ public class EnrollmentServiceTests
     {
         // Arrange
         var enrollments = new List<Enrollment>
-    {
-        new Enrollment { EnrollmentId = 1, StudentId = 1, CourseId = "C001" },
-        new Enrollment { EnrollmentId = 2, StudentId = 2, CourseId = "C002" }
-    };
-    var query = new EnrollmentQuery {};
+        {
+            new Enrollment { EnrollmentId = 1, StudentId = 1, CourseId = "C001" },
+            new Enrollment { EnrollmentId = 2, StudentId = 2, CourseId = "C002" }
+        };
+        var query = new EnrollmentQuery { };
         _mockEnrollmentRepository.Setup(r => r.GetAllEnrollmentsAsync(query))
                                  .ReturnsAsync(enrollments);
 
-        var studentsApiResponse = new ApiResponse<List<Student>>()
+        var studentResponse = new CourseApi.Protos.StudentsResponse
         {
-            Data = new List<Student>
-        {
-            new Student { StudentId = 1, FullName = "John Doe" },
-            new Student { StudentId = 2, FullName = "Jane Smith" }
-        }
-        };
-
-        _mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            Students =
             {
-                Content = new StringContent(JsonConvert.SerializeObject(studentsApiResponse))
-            });
-        Environment.SetEnvironmentVariable("StudentApiUrl", "https://localhost:5002");
+                new CourseApi.Protos.StudentResponse { StudentId = 1, Name = "John Doe" },
+                new CourseApi.Protos.StudentResponse { StudentId = 2, Name = "Jane Doe" }
+            }
+        };
+        _mockStudentServiceClient.Setup(c => c.GetStudentsByIdsAsync(It.IsAny<CourseApi.Protos.GetStudentsByIdsRequest>(), null, null, default))
+                                 .Returns(new Grpc.Core.AsyncUnaryCall<CourseApi.Protos.StudentsResponse>(
+                                     Task.FromResult(studentResponse),
+                                     Task.FromResult(new Grpc.Core.Metadata()),
+                                     () => new Grpc.Core.Status(),
+                                     () => new Grpc.Core.Metadata(),
+                                     () => { }
+                                 ));
+
+        _mockEnrollmentRepository.Setup(r => r.GetTotalEnrollmentsAsync(query))
+                                 .ReturnsAsync(2);
+        _mockMapper.Setup(m => m.Map<List<EnrollmentDto>>(It.IsAny<List<Enrollment>>()))
+                   .Returns(new List<EnrollmentDto> {
+                   new EnrollmentDto { EnrollmentId = 1, StudentId = 1, CourseId = "C001" },
+                   new EnrollmentDto { EnrollmentId = 2, StudentId = 2, CourseId = "C002" }
+                   });
+
         // Act
-        var result = await _mockEnrollmentService.Object.GetAllEnrollmentsAsync(query);
+        var result = await _enrollmentService.GetAllEnrollmentsAsync(query);
 
         // Assert
         result.Should().NotBeNull();
         result.Type.Should().Be(ResultType.Ok);
         result.Message.Should().Be("Get all enrollments successfully");
     }
+
+
     [Fact]
     public async Task GetEnrollmentByIdAsync_EnrollmentNotFound_NotFound()
     {
@@ -121,22 +121,18 @@ public class EnrollmentServiceTests
         var enrollment = new Enrollment { EnrollmentId = enrollmentId, StudentId = 1, CourseId = "C001" };
         _mockEnrollmentRepository.Setup(r => r.GetEnrollmentByIdAsync(enrollmentId))
                                  .ReturnsAsync(enrollment);
-
-        var studentApiResponse = new ApiResponse<Student>()
-        {
-            Data = new Student { StudentId = 1, FullName = "John Doe" }
-        };
-
-        _mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(JsonConvert.SerializeObject(studentApiResponse))
-            });
+        var response = new CourseApi.Protos.StudentResponse { StudentId = 1, Name = "John Doe" };
+        _mockStudentServiceClient.Setup(c => c.GetStudentByIdAsync(It.IsAny<CourseApi.Protos.GetStudentByIdRequest>(), null, null, default))
+                                 .Returns(new Grpc.Core.AsyncUnaryCall<CourseApi.Protos.StudentResponse>(
+                                     Task.FromResult(response),
+                                     Task.FromResult(new Grpc.Core.Metadata()),
+                                     () => new Grpc.Core.Status(),
+                                     () => new Grpc.Core.Metadata(),
+                                     () => { }
+                                 ));
 
         // Act
-        var result = await _mockEnrollmentService.Object.GetEnrollmentByIdAsync(enrollmentId);
+        var result = await _enrollmentService.GetEnrollmentByIdAsync(enrollmentId);
 
         // Assert
         result.Should().NotBeNull();
@@ -169,18 +165,20 @@ public class EnrollmentServiceTests
                              .ReturnsAsync(new Course { CourseId = "C001", CourseName = "Test Course" });
         _mockEnrollmentRepository.Setup(r => r.IsStudentEnrolledInCourseAsync(createEnrollmentDto.StudentId, createEnrollmentDto.CourseId))
                                  .ReturnsAsync(true);
-
+        var query = new EnrollmentQuery { CourseId = "C001", StudentId = 1 };
+        _mockEnrollmentRepository.Setup(r => r.IsStudentEnrolledInCourseAsync(query.StudentId.Value, query.CourseId))
+                                 .ReturnsAsync(true);
         // Act
         var result = await _enrollmentService.EnrollStudentInCourseAsync(createEnrollmentDto);
 
         // Assert
         result.Should().NotBeNull();
         result.Type.Should().Be(ResultType.BadRequest);
-        result.Message.Should().Be("Student is already enrolled in the course");
+        result.Message.Should().Be("Student already enrolled in course");
     }
 
 
-     [Fact]
+    [Fact]
     public async Task EnrollStudentInCourseAsync_ConnectStudentServiceFailed_InternalServerError()
     {
         // Arrange
@@ -189,33 +187,18 @@ public class EnrollmentServiceTests
         .ReturnsAsync(new Course { CourseId = "C001", CourseName = "Test Course" });
         _mockEnrollmentRepository.Setup(r => r.IsStudentEnrolledInCourseAsync(createEnrollmentDto.StudentId, createEnrollmentDto.CourseId))
             .ReturnsAsync(false);
-
-        var studentApiResponse = new ApiResponse<Student>()
-        {
-            Data = new Student { StudentId = 1, FullName = "John Doe" }
-        };
-
-        _mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                StatusCode = HttpStatusCode.InternalServerError
-            });
-
         _mockMapper.Setup(m => m.Map<Enrollment>(It.IsAny<CreateEnrollmentDto>()))
             .Returns(new Enrollment { StudentId = 1, CourseId = "C001" });
-
-        _mockEnrollmentRepository.Setup(r => r.CreateEnrollmentAsync(It.IsAny<Enrollment>()))
-            .ReturnsAsync(new Enrollment { EnrollmentId = 1, StudentId = 1, CourseId = "C001" });
+        _mockStudentServiceClient.Setup(c => c.GetStudentByIdAsync(It.IsAny<CourseApi.Protos.GetStudentByIdRequest>(), null, null, default))
+            .Throws(new Exception("Error retrieving student from StudentApi"));
 
         // Act
-        var result = await _mockEnrollmentService.Object.EnrollStudentInCourseAsync(createEnrollmentDto);
+        var result = await _enrollmentService.EnrollStudentInCourseAsync(createEnrollmentDto);
 
         // Assert
         result.Should().NotBeNull();
         result.Type.Should().Be(ResultType.InternalServerError);
-        result.Message.Should().Be("Error retrieving student from StudentApi");
+        result.Message.Should().Be("Error retrieving students from StudentApi");
     }
 
     [Fact]
@@ -228,27 +211,22 @@ public class EnrollmentServiceTests
         _mockEnrollmentRepository.Setup(r => r.IsStudentEnrolledInCourseAsync(createEnrollmentDto.StudentId, createEnrollmentDto.CourseId))
             .ReturnsAsync(false);
 
-        var studentApiResponse = new ApiResponse<Student>()
-        {
-            Data = new Student { StudentId = 1, FullName = "John Doe" }
-        };
-
-        _mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(JsonConvert.SerializeObject(studentApiResponse))
-            });
-
         _mockMapper.Setup(m => m.Map<Enrollment>(It.IsAny<CreateEnrollmentDto>()))
             .Returns(new Enrollment { StudentId = 1, CourseId = "C001" });
 
         _mockEnrollmentRepository.Setup(r => r.CreateEnrollmentAsync(It.IsAny<Enrollment>()))
             .ReturnsAsync(new Enrollment { EnrollmentId = 1, StudentId = 1, CourseId = "C001" });
+        _mockStudentServiceClient.Setup(c => c.GetStudentByIdAsync(It.IsAny<CourseApi.Protos.GetStudentByIdRequest>(), null, null, default))
+            .Returns(new Grpc.Core.AsyncUnaryCall<CourseApi.Protos.StudentResponse>(
+                Task.FromResult(new CourseApi.Protos.StudentResponse { StudentId = 1, Name = "John Doe" }),
+                Task.FromResult(new Grpc.Core.Metadata()),
+                () => new Grpc.Core.Status(),
+                () => new Grpc.Core.Metadata(),
+                () => { }
+            ));
 
         // Act
-        var result = await _mockEnrollmentService.Object.EnrollStudentInCourseAsync(createEnrollmentDto);
+        var result = await _enrollmentService.EnrollStudentInCourseAsync(createEnrollmentDto);
 
         // Assert
         result.Should().NotBeNull();

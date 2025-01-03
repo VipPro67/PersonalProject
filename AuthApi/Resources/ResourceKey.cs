@@ -34,5 +34,5 @@ public static class ResourceKey
     public static readonly string UsernameNoSpaces = "UsernameNoSpaces";
 
     public static readonly string EmailNoSpaces = "EmailNoSpaces";
-    
+
 }

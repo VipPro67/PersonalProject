@@ -1,234 +1,173 @@
 {
-    "Routes": [
+  "Routes": [
+    {
+      "DownstreamPathTemplate": "/api/auth/{everything}",
+      "DownstreamScheme": "https",
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "DownstreamHostAndPorts": [
         {
-            "DownstreamPathTemplate": "/api/auth/{everything}",
-            "DownstreamScheme": "http",
-            "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 5005
-                }
-            ],
-            "UpstreamPathTemplate": "/api/auth/{everything}",
-            "UpstreamHttpMethod": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"
-            ],
-            "SwaggerKey": "auth"
-        },
-        {
-            "UpstreamPathTemplate": "/api/courses/{everything}",
-            "UpstreamHttpMethod": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"
-            ],
-            "DownstreamScheme": "http",
-            "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 5001
-                }
-            ],
-            "DownstreamPathTemplate": "/api/courses/{everything}",
-            "AuthenticationOptions": {
-                "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": [
-                    "course-api",
-                    "all-api"
-                ]
-            },
-            "SwaggerKey": "courses"
-        },
-        {
-            "UpstreamPathTemplate": "/api/enrollments/{everything}",
-            "UpstreamHttpMethod": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"
-            ],
-            "DownstreamScheme": "http",
-            "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 5001
-                }
-            ],
-            "DownstreamPathTemplate": "/api/enrollments/{everything}",
-            "AuthenticationOptions": {
-                "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": [
-                    "course-api",
-                    "all-api",
-                    "enrollment-api"
-                ]
-            },
-            "SwaggerKey": "courses"
-        },
-        {
-            "UpstreamPathTemplate": "/api/students/{everything}",
-            "UpstreamHttpMethod": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"
-            ],
-            "DownstreamScheme": "http",
-            "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 5002
-                }
-            ],
-            "DownstreamPathTemplate": "/api/students/{everything}",
-            "AuthenticationOptions": {
-                "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": [
-                    "student-api",
-                    "all-api"
-                ]
-            },
-            "SwaggerKey": "students"
-        },
-        {
-            "UpstreamPathTemplate": "/api/students",
-            "UpstreamHttpMethod": [
-                "GET",
-                "POST",
-                "OPTIONS"
-            ],
-            "DownstreamScheme": "http",
-            "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 5002
-                }
-            ],
-            "DownstreamPathTemplate": "/api/students",
-            "AuthenticationOptions": {
-                "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": [
-                    "student-api",
-                    "all-api"
-                ]
-            },
-            "SwaggerKey": "students"
-        },
-        {
-            "UpstreamPathTemplate": "/api/courses",
-            "UpstreamHttpMethod": [
-                "GET",
-                "POST",
-                "OPTIONS"
-            ],
-            "DownstreamScheme": "http",
-            "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 5001
-                }
-            ],
-            "DownstreamPathTemplate": "/api/courses",
-            "AuthenticationOptions": {
-                "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": [
-                    "course-api",
-                    "all-api"
-                ]
-            },
-            "SwaggerKey": "courses"
-        },
-        {
-            "UpstreamPathTemplate": "/api/enrollments",
-            "UpstreamHttpMethod": [
-                "GET",
-                "POST",
-                "OPTIONS"
-            ],
-            "DownstreamScheme": "http",
-            "DownstreamHostAndPorts": [
-                {
-                    "Host": "localhost",
-                    "Port": 5001
-                }
-            ],
-            "DownstreamPathTemplate": "/api/enrollments",
-            "AuthenticationOptions": {
-                "AuthenticationProviderKey": "Bearer",
-                "AllowedScopes": [
-                    "all-api",
-                    "enrollment-api",
-                    "course-api"
-                ]
-            },
-            "SwaggerKey": "enrollments"
+          "Host": "localhost",
+          "Port": 5005
         }
-    ],
-    "SwaggerEndPoints": [
-        {
-            "Key": "auth",
-            "Config": [
-                {
-                    "Name": "Auth API",
-                    "Version": "v1",
-                    "Url": "http://localhost:5005/swagger/v1/swagger.json"
-                }
-            ]
-        },
-        {
-            "Key": "courses",
-            "Config": [
-                {
-                    "Name": "Courses API",
-                    "Version": "v1",
-                    "Url": "http://localhost:5001/swagger/v1/swagger.json"
-                }
-            ]
-        },
-        {
-            "Key": "students",
-            "Config": [
-                {
-                    "Name": "Students API",
-                    "Version": "v1",
-                    "Url": "http://localhost:5002/swagger/v1/swagger.json"
-                }
-            ]
-        }
-    ],
-    "GlobalConfiguration": {
-        "BaseUrl": "http://localhost:5000",
-        "Cors": {
-            "AllowedOrigins": [
-                "*"
-            ],
-            "AllowedMethods": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"
-            ],
-            "AllowedHeaders": [
-                "Content-Type",
-                "Authorization",
-                "Accept-Language"
-            ]
-        }
+      ],
+      "UpstreamPathTemplate": "/api/auth/{everything}",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "SwaggerKey": "auth"
     },
-    "Logging": {
-        "LogLevel": {
-            "Default": "Debug",
-            "System": "Information",
-            "Microsoft": "Information"
+    {
+      "UpstreamPathTemplate": "/api/courses/{everything}",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "DownstreamScheme": "https",
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5001
         }
+      ],
+      "DownstreamPathTemplate": "/api/courses/{everything}",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": ["course-api", "all-api"]
+      },
+      "SwaggerKey": "courses"
+    },
+    {
+      "UpstreamPathTemplate": "/api/enrollments/{everything}",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "DownstreamScheme": "https",
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
+      ],
+      "DownstreamPathTemplate": "/api/enrollments/{everything}",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": ["course-api", "all-api", "enrollment-api"]
+      },
+      "SwaggerKey": "courses"
+    },
+    {
+      "UpstreamPathTemplate": "/api/students/{everything}",
+      "UpstreamHttpMethod": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "DownstreamScheme": "https",
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "DownstreamPathTemplate": "/api/students/{everything}",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": ["student-api", "all-api"]
+      },
+      "SwaggerKey": "students"
+    },
+    {
+      "UpstreamPathTemplate": "/api/students",
+      "UpstreamHttpMethod": ["GET", "POST", "OPTIONS"],
+      "DownstreamScheme": "https",
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5002
+        }
+      ],
+      "DownstreamPathTemplate": "/api/students",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": ["student-api", "all-api"]
+      },
+      "SwaggerKey": "students"
+    },
+    {
+      "UpstreamPathTemplate": "/api/courses",
+      "UpstreamHttpMethod": ["GET", "POST", "OPTIONS"],
+      "DownstreamScheme": "https",
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
+      ],
+      "DownstreamPathTemplate": "/api/courses",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": ["course-api", "all-api"]
+      },
+      "SwaggerKey": "courses"
+    },
+    {
+      "UpstreamPathTemplate": "/api/enrollments",
+      "UpstreamHttpMethod": ["GET", "POST", "OPTIONS"],
+      "DownstreamScheme": "https",
+      "DangerousAcceptAnyServerCertificateValidator": true,
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5001
+        }
+      ],
+      "DownstreamPathTemplate": "/api/enrollments",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": ["all-api", "enrollment-api", "course-api"]
+      },
+      "SwaggerKey": "enrollments"
     }
+  ],
+  "SwaggerEndPoints": [
+    {
+      "Key": "auth",
+      "Config": [
+        {
+          "Name": "Auth API",
+          "Version": "v1",
+          "Url": "http://localhost:5005/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "courses",
+      "Config": [
+        {
+          "Name": "Courses API",
+          "Version": "v1",
+          "Url": "http://localhost:5001/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "students",
+      "Config": [
+        {
+          "Name": "Students API",
+          "Version": "v1",
+          "Url": "http://localhost:5002/swagger/v1/swagger.json"
+        }
+      ]
+    }
+  ],
+  "GlobalConfiguration": {
+    "BaseUrl": "http://localhost:5000",
+    "Cors": {
+      "AllowedOrigins": ["*"],
+      "AllowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "AllowedHeaders": ["Content-Type", "Authorization", "Accept-Language"]
+    }
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "System": "Information",
+      "Microsoft": "Information"
+    }
+  }
 }

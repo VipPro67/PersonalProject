@@ -2,7 +2,7 @@ namespace CourseApi.Helpers;
 public class EnrollmentQuery
 {
     public string? CourseId { get; set; } = null;
-    
+
     public int? StudentId { get; set; } = null;
 
     public string? SortBy { get; set; } = "enrollmentId";
