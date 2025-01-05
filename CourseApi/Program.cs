@@ -107,6 +107,7 @@ builder.Services.AddControllers(option =>
         options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
     });
 builder.Services.AddGrpc();
+builder.Services.AddHybridCache();
 /*
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
 var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");

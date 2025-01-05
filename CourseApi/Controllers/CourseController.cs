@@ -1,8 +1,11 @@
-﻿using CourseApi.DTOs;
+﻿using System.Text.Json;
+using CourseApi.DTOs;
 using CourseApi.Helpers;
 using CourseApi.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Hybrid;
+using Serilog;
 
 namespace CourseApi.Controllers
 {
@@ -14,32 +17,64 @@ namespace CourseApi.Controllers
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
+        private readonly HybridCache _cache;
 
-        public CourseController(ICourseService courseService)
+        public CourseController(ICourseService courseService, HybridCache cache)
         {
             _courseService = courseService;
+            _cache = cache;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllCoursesAsync([FromQuery] CourseQuery query)
+        public async Task<IActionResult> GetAllCoursesAsync([FromQuery] CourseQuery query, CancellationToken token = default)
         {
-            var result = await _courseService.GetCoursesAsync(query);
+            var cacheKey = $"courses_{query.GetHashCode()}";
+            var cachedResult = await _cache.GetOrCreateAsync(
+                cacheKey,
+                async (cancellationToken) =>
+                {
+                    var result = await _courseService.GetCoursesAsync(query);
+                    return JsonSerializer.Serialize(result);
+                },
+                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) },
+                null,
+                token);
+            var result = JsonSerializer.Deserialize<ServiceResult<List<CourseDto>>>(cachedResult);
             return this.ToActionResult(result);
         }
-
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetCourseByIdAsync(string id)
+        public async Task<IActionResult> GetCourseByIdAsync(string id, CancellationToken token = default)
         {
-            var result = await _courseService.GetCourseByCourseIdAsync(id);
+            var cacheKey = $"course_{id}";
+            var cachedResult = await _cache.GetOrCreateAsync(
+                cacheKey,
+                async (cancellationToken) =>
+                {
+                    var result = await _courseService.GetCourseByCourseIdAsync(id);
+                    return JsonSerializer.Serialize(result);
+                },
+                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) },
+                null,
+                token);
+            var result = JsonSerializer.Deserialize<ServiceResult<CourseDto>>(cachedResult);
             return this.ToActionResult(result);
-
         }
 
         [HttpGet("{id}/students")]
-        public async Task<IActionResult> GetStudentsInCourseAsync(string id)
+        public async Task<IActionResult> GetStudentsInCourseAsync(string id, CancellationToken token = default)
         {
-            var result = await _courseService.GetStudentsByCourseIdAsync(id);
+            var cacheKey = $"students_{id}";
+            var cachedResult = await _cache.GetOrCreateAsync(
+                cacheKey,
+                async (cancellationToken) =>
+                {
+                    var result = await _courseService.GetStudentsByCourseIdAsync(id);
+                    return JsonSerializer.Serialize(result);
+                },
+                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) },
+                null,
+                token);
+            var result = JsonSerializer.Deserialize<ServiceResult<List<StudentDto>>>(cachedResult);
             return this.ToActionResult(result);
-
         }
 
         [HttpPost]

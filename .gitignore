@@ -3,3 +3,4 @@
 [Ll]ogs
 .vscode
 .env
+*.pfx
