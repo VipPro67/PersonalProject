@@ -4,6 +4,7 @@ using CourseApi.Helpers;
 using CourseApi.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Hybrid;
 using Moq;
 
 namespace CourseApiTest.Controllers;
@@ -12,11 +13,13 @@ public class EnrollmentControllerTests
 {
     private readonly Mock<IEnrollmentService> _mockEnrollmentService;
     private readonly EnrollmentController _enrollmentController;
+    private readonly Mock<HybridCache> _mockCache;
 
     public EnrollmentControllerTests()
     {
         _mockEnrollmentService = new Mock<IEnrollmentService>();
-        _enrollmentController = new EnrollmentController(_mockEnrollmentService.Object);
+        _mockCache = new Mock<HybridCache>();
+        _enrollmentController = new EnrollmentController(_mockEnrollmentService.Object, _mockCache.Object);
     }
     [Fact]
     public async Task GetAllEnrollmentsAsync_ServiceResultTypeSuccess_OkResult()
@@ -32,7 +35,7 @@ public class EnrollmentControllerTests
             }
         };
         var query = new EnrollmentQuery{};
-        var serviceResult = new ServiceResult(enrollments, "Get all enrollments successfully");
+        var serviceResult = new ServiceResult<List<EnrollmentDto>>(enrollments, "Get all enrollments successfully");
         _mockEnrollmentService.Setup(s => s.GetAllEnrollmentsAsync(query)).ReturnsAsync(serviceResult);
 
         // Act
@@ -56,7 +59,7 @@ public class EnrollmentControllerTests
             StudentId = 1,
             CourseId = "C001",
         };
-        var serviceResult = new ServiceResult(enrollmentDto, "Enrollment found successfully");
+        var serviceResult = new ServiceResult<EnrollmentDto>(enrollmentDto, "Enrollment found successfully");
         _mockEnrollmentService.Setup(s => s.GetEnrollmentByIdAsync(enrollmentId)).ReturnsAsync(serviceResult);
 
         // Act
@@ -74,7 +77,7 @@ public class EnrollmentControllerTests
     {
         // Arrange
         int invalidId = 999;
-        var serviceResult = new ServiceResult(ResultType.NotFound, "Enrollment not found");
+        var serviceResult = new ServiceResult<EnrollmentDto>(ResultType.NotFound, "Enrollment not found");
         _mockEnrollmentService.Setup(s => s.GetEnrollmentByIdAsync(invalidId)).ReturnsAsync(serviceResult);
 
         // Act
@@ -97,7 +100,7 @@ public class EnrollmentControllerTests
             new EnrollmentDto { EnrollmentId = 1, CourseId = courseId, StudentId = 101 , CourseName = "Advanced Programming" , StudentName = "John Doe" },
             new EnrollmentDto { EnrollmentId = 2, CourseId = courseId, StudentId = 102 , CourseName = "Advanced Programming" , StudentName = "Jane Smith" }
         };
-        var serviceResult = new ServiceResult(enrollments, "Enrollments retrieved successfully");
+        var serviceResult = new ServiceResult<List<EnrollmentDto>>(enrollments, "Enrollments retrieved successfully");
         _mockEnrollmentService.Setup(s => s.GetEnrollmentsByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
 
         // Act
@@ -121,7 +124,7 @@ public class EnrollmentControllerTests
             new EnrollmentDto { EnrollmentId = 1, StudentId = studentId, CourseId = "C001" },
             new EnrollmentDto { EnrollmentId = 2, StudentId = studentId, CourseId = "C002" }
         };
-        var serviceResult = new ServiceResult(enrollments, "Enrollments retrieved successfully");
+        var serviceResult = new ServiceResult<List<EnrollmentDto>>(enrollments, "Enrollments retrieved successfully");
         _mockEnrollmentService.Setup(s => s.GetEnrollmentsByStudentIdAsync(studentId)).ReturnsAsync(serviceResult);
 
         // Act
@@ -152,7 +155,7 @@ public class EnrollmentControllerTests
             CourseName = "Course ",
             StudentName = "John Doe"
         };
-        var serviceResult = new ServiceResult(enrollmentDto, "Enrollment created successfully");
+        var serviceResult = new ServiceResult<EnrollmentDto>(enrollmentDto, "Enrollment created successfully");
         _mockEnrollmentService.Setup(s => s.EnrollStudentInCourseAsync(createEnrollmentDto)).ReturnsAsync(serviceResult);
 
         // Act
@@ -172,7 +175,7 @@ public class EnrollmentControllerTests
     {
         // Arrange
         var invalidEnrollmentDto = new CreateEnrollmentDto();
-        var serviceResult = new ServiceResult(ResultType.BadRequest, "Invalid enrollment data");
+        var serviceResult = new ServiceResult<EnrollmentDto>(ResultType.BadRequest, "Invalid enrollment data");
         _mockEnrollmentService.Setup(s => s.EnrollStudentInCourseAsync(invalidEnrollmentDto)).ReturnsAsync(serviceResult);
 
         // Act
@@ -189,7 +192,7 @@ public class EnrollmentControllerTests
     public async Task CreateEnrollmentAsync_ConnectionError_InternalServerError()
     {
         // Arrange
-        var serviceResult = new ServiceResult(ResultType.InternalServerError, "Some error");
+        var serviceResult = new ServiceResult<EnrollmentDto>(ResultType.InternalServerError, "Some error");
         _mockEnrollmentService.Setup(s => s.EnrollStudentInCourseAsync(It.IsAny<CreateEnrollmentDto>())).ReturnsAsync(serviceResult);
 
         // Act
@@ -209,7 +212,7 @@ public class EnrollmentControllerTests
     {
         // Arrange
         int enrollmentId = 1;
-        var serviceResult = new ServiceResult(true, "Enrollment deleted successfully");
+        var serviceResult = new ServiceResult<bool>(true, "Enrollment deleted successfully");
         _mockEnrollmentService.Setup(s => s.DeleteEnrollmentAsync(enrollmentId)).ReturnsAsync(serviceResult);
         // Act
         var result = await _enrollmentController.DeleteEnrollmentAsync(enrollmentId);
@@ -225,7 +228,7 @@ public class EnrollmentControllerTests
     {
         // Arrange
         int invalidId = 999;
-        var serviceResult = new ServiceResult(ResultType.NotFound, "Enrollment not found");
+        var serviceResult = new ServiceResult<bool>(ResultType.NotFound, "Enrollment not found");
         _mockEnrollmentService.Setup(s => s.DeleteEnrollmentAsync(invalidId)).ReturnsAsync(serviceResult);
 
         // Act

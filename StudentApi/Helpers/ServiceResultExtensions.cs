@@ -5,7 +5,7 @@ namespace StudentApi.Helpers
 {
     public static class ServiceResultExtensions
     {
-        public static IActionResult ToActionResult(this ControllerBase controller, ServiceResult result)
+        public static IActionResult ToActionResult<T>(this ControllerBase controller, ServiceResult<T> result)
         {
             switch (result.Type)
             {

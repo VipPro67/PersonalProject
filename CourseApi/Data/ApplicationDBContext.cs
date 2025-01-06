@@ -39,7 +39,6 @@ public class ApplicationDbContext : DbContext
             .HasForeignKey(e => e.CourseId).HasConstraintName("FK_Enrollment_Course");
             e.Ignore(e => e.Student);
             e.HasIndex(e => new { e.StudentId, e.CourseId }).IsUnique();
-
         });
 
         var courses = new List<Course>()

@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Hybrid;
 using StudentApi.DTOs;
 using StudentApi.Helpers;
 using StudentApi.Services;
@@ -13,30 +15,82 @@ namespace StudentApi.Controllers
     public class StudentController : ControllerBase
     {
         private readonly IStudentService _studentService;
+        private readonly HybridCache _cache;
 
-        public StudentController(IStudentService studentService)
+        public StudentController(IStudentService studentService, HybridCache cache)
         {
             _studentService = studentService;
+            _cache = cache;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllStudentsAsync([FromQuery] StudentQuery query)
+        public async Task<IActionResult> GetAllStudentsAsync([FromQuery] StudentQuery query, CancellationToken token = default)
         {
-            var result = await _studentService.GetStudentsAsync(query);
+            var rawCacheKey = JsonSerializer.Serialize(query);
+            var cacheKey = $"enrollments_{GenerateHash.Hash(rawCacheKey)}";
+            
+            var needCache = Request.Headers.TryGetValue("Cache-Control", out var cacheControl);
+            if (needCache && cacheControl.Contains("no-cache"))
+            {
+               await  _cache.RemoveAsync(cacheKey);
+            }
+            var cachedResult = await _cache.GetOrCreateAsync(
+                cacheKey,
+                async (cancellationToken) =>
+                {
+                    var result = await _studentService.GetStudentsAsync(query);
+                    return JsonSerializer.Serialize(result);
+                },
+                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(3) },
+                null,
+                token);
+            var result = JsonSerializer.Deserialize<ServiceResult<List<StudentDto>>>(cachedResult);
             return this.ToActionResult(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetStudentByIdAsync(int id)
+        public async Task<IActionResult> GetStudentByIdAsync(int id, CancellationToken token = default)
         {
-            var result = await _studentService.GetStudentByIdAsync(id);
+            var cacheKey = $"student_{id}";
+            var needCache = Request.Headers.TryGetValue("Cache-Control", out var cacheControl);
+            if (needCache && cacheControl.Contains("no-cache"))
+            {
+                await _cache.RemoveAsync(cacheKey);
+            }
+            var cachedResult = await _cache.GetOrCreateAsync(
+                cacheKey,
+                async (cancellationToken) =>
+                {
+                    var result = await _studentService.GetStudentByIdAsync(id);
+                    return JsonSerializer.Serialize(result);
+                },
+                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(3) },
+                null,
+                token);
+            var result = JsonSerializer.Deserialize<ServiceResult<StudentDto>>(cachedResult);
             return this.ToActionResult(result);
         }
 
         [HttpGet("ids")]
-        public async Task<IActionResult> GetStudentsByIdsAsync([FromQuery] List<int> ids)
+        public async Task<IActionResult> GetStudentsByIdsAsync([FromQuery] List<int> ids, CancellationToken token = default)
         {
-            var result = await _studentService.GetStudentsByIdsAsync(ids);
+            var cacheKey = $"students_{GenerateHash.Hash(JsonSerializer.Serialize(ids))}";
+            var needCache = Request.Headers.TryGetValue("Cache-Control", out var cacheControl);
+            if (needCache && cacheControl.Contains("no-cache"))
+            {
+                await _cache.RemoveAsync(cacheKey);
+            }
+            var cachedResult = await _cache.GetOrCreateAsync(
+                cacheKey,
+                async (cancellationToken) =>
+                {
+                    var result = await _studentService.GetStudentsByIdsAsync(ids);
+                    return JsonSerializer.Serialize(result);
+                },
+                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(3) },
+                null,
+                token);
+            var result = JsonSerializer.Deserialize<ServiceResult<List<StudentDto>>>(cachedResult);
             return this.ToActionResult(result);
         }
 

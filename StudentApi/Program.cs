@@ -6,8 +6,8 @@ using Grpc.Net.Client;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json.Converters;
 using Serilog;
 using StudentApi.Data;
 using StudentApi.DTOs;
@@ -68,6 +68,18 @@ builder.Host.UseSerilog((context, configuration) =>
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStringW")));
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddSingleton(provider =>
+{
+    var courseApiUrl = Environment.GetEnvironmentVariable("CourseApiUrl");
+    return GrpcChannel.ForAddress(courseApiUrl, new GrpcChannelOptions
+    {
+        HttpHandler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        }
+    });
+});
+
 builder.Services.AddTransient<StudentApi.Protos.EnrollmentService.EnrollmentServiceClient>(provider =>
 {
     var channel = provider.GetRequiredService<GrpcChannel>();
@@ -89,6 +101,11 @@ builder.Services.AddControllers(option =>
         options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
     })
     .ConfigureApiBehaviorOptions(options => options.SuppressModelStateInvalidFilter = true);
+builder.Services.AddHybridCache();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = Environment.GetEnvironmentVariable("RedisConnectionString");
+});
 builder.Services.AddAutoMapper(typeof(StudentMappingProfile));
 /*
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");

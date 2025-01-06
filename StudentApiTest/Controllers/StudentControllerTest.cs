@@ -5,17 +5,20 @@ using StudentApi.DTOs;
 using StudentApi.Helpers;
 using StudentApi.Services;
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace StudentApiTest.Controllers;
 public class StudentControllerTests
 {
     private readonly Mock<IStudentService> _mockStudentService;
     private readonly StudentController _studentController;
+    private readonly Mock<HybridCache> _mockCache;
 
     public StudentControllerTests()
     {
         _mockStudentService = new Mock<IStudentService>();
-        _studentController = new StudentController(_mockStudentService.Object);
+        _mockCache = new Mock<HybridCache>();
+        _studentController = new StudentController(_mockStudentService.Object, _mockCache.Object);
     }
 
     [Fact]
@@ -41,7 +44,7 @@ public class StudentControllerTests
                 PhoneNumber = "1234567890",
                 Grade = 1}
         };
-        var serviceResult = new ServiceResult(listStudents, "Get list students successfully");
+        var serviceResult = new ServiceResult<List<StudentDto>>(listStudents, "Get list students successfully");
         _mockStudentService.Setup(s => s.GetStudentsAsync(query)).ReturnsAsync(serviceResult);
 
         // Act
@@ -57,7 +60,7 @@ public class StudentControllerTests
     public async Task GGetAllStudentsAsync_ServiceResultTypeNotFound_NotFoundResult()
     {
         var query = new StudentQuery();
-        var serviceResult = new ServiceResult(ResultType.NotFound, "Students not found");
+        var serviceResult = new ServiceResult<List<StudentDto>>(ResultType.NotFound, "Students not found");
         _mockStudentService.Setup(s => s.GetStudentsAsync(query)).ReturnsAsync(serviceResult);
 
         // Act
@@ -82,7 +85,7 @@ public class StudentControllerTests
             PhoneNumber = "5551234567",
             Grade = 2
         };
-        var serviceResult = new ServiceResult(student, "Get student by id successfully");
+        var serviceResult = new ServiceResult<StudentDto>(student, "Get student by id successfully");
         _mockStudentService.Setup(s => s.GetStudentByIdAsync(studentId)).ReturnsAsync(serviceResult);
 
         // Act
@@ -96,7 +99,7 @@ public class StudentControllerTests
     public async Task GetStudentByIdAsync_ServiceResultTypeNotFound_NotFoundResult()
     {
         var query = new List<StudentDto>();
-        var serviceResult = new ServiceResult(ResultType.NotFound, "Students not found");
+        var serviceResult = new ServiceResult<StudentDto>(ResultType.NotFound, "Students not found");
 
         _mockStudentService.Setup(s => s.GetStudentByIdAsync(It.IsAny<int>())).ReturnsAsync(serviceResult);
 
@@ -132,7 +135,7 @@ public class StudentControllerTests
                 Grade = 1}
         };
 
-        var serviceResult = new ServiceResult(listStudents, "Get list students by ids successfully");
+        var serviceResult = new ServiceResult<List<StudentDto>>(listStudents, "Get list students by ids successfully");
         _mockStudentService.Setup(s => s.GetStudentsByIdsAsync(ids)).ReturnsAsync(serviceResult);
 
         // Act
@@ -154,9 +157,20 @@ public class StudentControllerTests
             Address = "123 Main St Updated",
             Email = "john.doe@example.com",
             DateOfBirth = new DateOnly(2003, 2, 2),
-            PhoneNumber = "5551234567"
+            PhoneNumber = "5551234567",
+            Grade = 2
         };
-        var serviceResult = new ServiceResult(newStudent, "Create student successfully");
+        var student = new StudentDto()
+        {
+            StudentId = 1,
+            FullName = "John Doe Updated",
+            Address = "123 Main St Updated",
+            Email = "john.doe@example.com",
+            DateOfBirth = new DateOnly(2003, 2, 2),
+            PhoneNumber = "5551234567",
+            Grade = 2,
+        };
+        var serviceResult = new ServiceResult<StudentDto>(student, "Create student successfully");
 
         _mockStudentService.Setup(s => s.CreateStudentAsync(newStudent)).ReturnsAsync(serviceResult);
 
@@ -183,7 +197,17 @@ public class StudentControllerTests
             DateOfBirth = new DateOnly(2003, 2, 2),
             PhoneNumber = "5551234567"
         };
-        var serviceResult = new ServiceResult(updateStudent, "Update student successfully");
+        var student = new StudentDto()
+        {
+            StudentId = 1,
+            FullName = "John Doe Updated",
+            Address = "123 Main St Updated",
+            Email = "john.doe@example.com",
+            DateOfBirth = new DateOnly(2003, 2, 2),
+            PhoneNumber = "5551234567",
+            Grade = 2
+        };
+        var serviceResult = new ServiceResult<StudentDto>(student, "Update student successfully");
         _mockStudentService.Setup(s => s.UpdateStudentAsync(studentId, updateStudent)).ReturnsAsync(serviceResult);
 
         // Act
@@ -199,7 +223,7 @@ public class StudentControllerTests
     {
         // Arrange
         var studentId = 1;
-        var serviceResult = new ServiceResult(true, "Delete student successfully");
+        var serviceResult = new ServiceResult<bool>(true, "Delete student successfully");
         _mockStudentService.Setup(s => s.DeleteStudentAsync(studentId)).ReturnsAsync(serviceResult);
 
         var result = await _studentController.DeleteStudentAsync(studentId);

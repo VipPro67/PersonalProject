@@ -27,7 +27,14 @@ namespace CourseApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllCoursesAsync([FromQuery] CourseQuery query, CancellationToken token = default)
         {
-            var cacheKey = $"courses_{query.GetHashCode()}";
+            var rawCacheKey = JsonSerializer.Serialize(query);
+            var cacheKey = $"enrollments_{GenerateHash.Hash(rawCacheKey)}";
+
+            var needCache = Request.Headers.TryGetValue("Cache-Control", out var cacheControl);
+            if (needCache && cacheControl.Contains("no-cache"))
+            {
+                await _cache.RemoveAsync(cacheKey, token);
+            }
             var cachedResult = await _cache.GetOrCreateAsync(
                 cacheKey,
                 async (cancellationToken) =>
@@ -35,7 +42,7 @@ namespace CourseApi.Controllers
                     var result = await _courseService.GetCoursesAsync(query);
                     return JsonSerializer.Serialize(result);
                 },
-                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) },
+                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(3) },
                 null,
                 token);
             var result = JsonSerializer.Deserialize<ServiceResult<List<CourseDto>>>(cachedResult);
@@ -45,6 +52,12 @@ namespace CourseApi.Controllers
         public async Task<IActionResult> GetCourseByIdAsync(string id, CancellationToken token = default)
         {
             var cacheKey = $"course_{id}";
+            var needCache = Request.Headers.TryGetValue("Cache-Control", out var cacheControl);
+            if (needCache && cacheControl.Contains("no-cache"))
+            {
+                Log.Information("Cache key no-cache: {cacheKey}", cacheKey);
+                await _cache.RemoveAsync(cacheKey, token);
+            }
             var cachedResult = await _cache.GetOrCreateAsync(
                 cacheKey,
                 async (cancellationToken) =>
@@ -52,7 +65,7 @@ namespace CourseApi.Controllers
                     var result = await _courseService.GetCourseByCourseIdAsync(id);
                     return JsonSerializer.Serialize(result);
                 },
-                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) },
+                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(3) },
                 null,
                 token);
             var result = JsonSerializer.Deserialize<ServiceResult<CourseDto>>(cachedResult);
@@ -63,6 +76,11 @@ namespace CourseApi.Controllers
         public async Task<IActionResult> GetStudentsInCourseAsync(string id, CancellationToken token = default)
         {
             var cacheKey = $"students_{id}";
+            var needCache = Request.Headers.TryGetValue("Cache-Control", out var cacheControl);
+            if (needCache && cacheControl.Contains("no-cache"))
+            {
+                await _cache.RemoveAsync(cacheKey, token);
+            }
             var cachedResult = await _cache.GetOrCreateAsync(
                 cacheKey,
                 async (cancellationToken) =>
@@ -70,7 +88,7 @@ namespace CourseApi.Controllers
                     var result = await _courseService.GetStudentsByCourseIdAsync(id);
                     return JsonSerializer.Serialize(result);
                 },
-                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) },
+                new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(3) },
                 null,
                 token);
             var result = JsonSerializer.Deserialize<ServiceResult<List<StudentDto>>>(cachedResult);

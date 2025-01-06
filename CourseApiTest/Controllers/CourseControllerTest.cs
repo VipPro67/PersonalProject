@@ -4,6 +4,7 @@ using CourseApi.Helpers;
 using CourseApi.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Hybrid;
 using Moq;
 
 namespace CourseApiTest.Controllers;
@@ -11,11 +12,13 @@ public class CourseControllerTests
 {
     private readonly Mock<ICourseService> _mockCourseService;
     private readonly CourseController _courseController;
+    private readonly Mock<HybridCache> _mockCache;
 
     public CourseControllerTests()
     {
         _mockCourseService = new Mock<ICourseService>();
-        _courseController = new CourseController(_mockCourseService.Object);
+        _mockCache = new Mock<HybridCache>();
+        _courseController = new CourseController(_mockCourseService.Object, _mockCache.Object);
     }
 
     [Fact]
@@ -38,7 +41,7 @@ public class CourseControllerTests
                 Schedule = "Mon, Wed, Fri 10:00-11:30"
            }
        };
-        var serviceResult = new ServiceResult(listCourses, "Get list course successfully");
+        var serviceResult = new ServiceResult<List<CourseDto>>(listCourses, "Get list course successfully");
         _mockCourseService.Setup(s => s.GetCoursesAsync(query)).ReturnsAsync(serviceResult);
 
         // Act
@@ -56,7 +59,7 @@ public class CourseControllerTests
     {
         // Arrange
         var query = new CourseQuery();
-        var serviceResult = new ServiceResult(ResultType.NotFound, "Courses not found");
+        var serviceResult = new ServiceResult<List<CourseDto>>(ResultType.NotFound, "Courses not found");
         _mockCourseService.Setup(s => s.GetCoursesAsync(query)).ReturnsAsync(serviceResult);
         // Act
         var result = await _courseController.GetAllCoursesAsync(query);
@@ -80,7 +83,7 @@ public class CourseControllerTests
             EndDate = new DateOnly(2024, 5, 10),
             Schedule = "Mon, Wed, Fri 10:00-11:30"
         };
-        var serviceResult = new ServiceResult(courseDto, "Course found successfully");
+        var serviceResult = new ServiceResult<CourseDto>(courseDto, "Course found successfully");
         _mockCourseService.Setup(s => s.GetCourseByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
 
         // Act
@@ -99,7 +102,7 @@ public class CourseControllerTests
     {
         // Arrange
         var courseId = "C001";
-        var serviceResult = new ServiceResult(ResultType.NotFound, "Course not found");
+        var serviceResult = new ServiceResult<CourseDto>(ResultType.NotFound, "Course not found");
         _mockCourseService.Setup(s => s.GetCourseByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
 
         // Act
@@ -120,7 +123,7 @@ public class CourseControllerTests
                 FullName = "John Doe",
             }
         };
-        var serviceResult = new ServiceResult(listStudents, "Get list of students successfully");
+        var serviceResult = new ServiceResult<List<StudentDto>>(listStudents, "Get list of students successfully");
         _mockCourseService.Setup(s => s.GetStudentsByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
 
         // Act
@@ -138,7 +141,7 @@ public class CourseControllerTests
     {
         // Arrange
         var courseId = "C001";
-        var serviceResult = new ServiceResult(ResultType.NotFound, "Course not found");
+        var serviceResult = new ServiceResult<List<StudentDto>>(ResultType.NotFound, "Course not found");
         _mockCourseService.Setup(s => s.GetStudentsByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
 
         // Act
@@ -178,7 +181,7 @@ public class CourseControllerTests
             EndDate = new DateOnly(2024, 5, 10),
             Schedule = "Mon, Wed, Fri 10:00-11:30"
         };
-        var serviceResult = new ServiceResult(courseDto, "Create course successfully");
+        var serviceResult = new ServiceResult<CourseDto>(courseDto, "Create course successfully");
         _mockCourseService.Setup(s => s.CreateCourseAsync(createCourseDto)).ReturnsAsync(serviceResult);
         // Act
         var result = await _courseController.AddCourseAsync(createCourseDto);
@@ -203,7 +206,7 @@ public class CourseControllerTests
             Schedule = "Mon, Wed, Fri 10:00-11:30"
         };
 
-        var serviceResult = new ServiceResult(ResultType.BadRequest, "Course with id already exists");
+        var serviceResult = new ServiceResult<CourseDto>(ResultType.BadRequest, "Course with id already exists");
         _mockCourseService.Setup(s => s.CreateCourseAsync(createCourseDto)).ReturnsAsync(serviceResult);
 
         // Act
@@ -243,7 +246,7 @@ public class CourseControllerTests
             EndDate = new DateOnly(2024, 5, 10),
             Schedule = "Mon, Wed, Fri 10:00-11:30"
         };
-        var serviceResult = new ServiceResult(courseDto, "Update course successfully");
+        var serviceResult = new ServiceResult<CourseDto>(courseDto, "Update course successfully");
         _mockCourseService.Setup(s => s.UpdateCourseAsync(courseId, updateCourseDto)).ReturnsAsync(serviceResult);
 
         // Act
@@ -261,7 +264,7 @@ public class CourseControllerTests
     {
         // Arrange
         var courseId = "C001";
-        var serviceResult = new ServiceResult(ResultType.NotFound, "Course not found");
+        var serviceResult = new ServiceResult<CourseDto>(ResultType.NotFound, "Course not found");
         _mockCourseService.Setup(s => s.UpdateCourseAsync(courseId, It.IsAny<UpdateCourseDto>())).ReturnsAsync(serviceResult);
     
         // Act
@@ -274,7 +277,7 @@ public class CourseControllerTests
     {
         // Arrange
         var courseId = "C001";
-        var serviceResult = new ServiceResult(ResultType.Ok, "Delete course successfully");
+        var serviceResult = new ServiceResult<bool>(ResultType.Ok, "Delete course successfully");
         _mockCourseService.Setup(s => s.DeleteCourseAsync(courseId)).ReturnsAsync(serviceResult);
 
         // Act

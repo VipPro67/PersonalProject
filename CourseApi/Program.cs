@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Converters;
 using Serilog;
+using Microsoft.Extensions.Caching.Hybrid;
 
 Env.Load();
 var builder = WebApplication.CreateBuilder(args);
@@ -107,7 +108,14 @@ builder.Services.AddControllers(option =>
         options.SerializerSettings.Converters.Add(new DateOnlyJsonConverter());
     });
 builder.Services.AddGrpc();
+
+
 builder.Services.AddHybridCache();
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = Environment.GetEnvironmentVariable("RedisConnectionString");
+});
 /*
 var _JWTKeyValidIssuer = Environment.GetEnvironmentVariable("JWTKeyValidIssuer");
 var _JWTKeyValidAudience = Environment.GetEnvironmentVariable("JWTKeyValidAudience");

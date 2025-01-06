@@ -6,9 +6,9 @@ public class StudentQuery
     public string? PhoneNumber { get; set; } = null;
 
     //public DateOnly DateOfBirth { get; set; }
-    public string? Address { get; set; }
-    public int? GradeMin { get; set; }
-    public int? GradeMax { get; set; }
+    public string? Address { get; set; } = null;
+    public int? GradeMin { get; set; } = 1;
+    public int? GradeMax { get; set; } = 8;
 
     public string? SortBy { get; set; } = "StudentId";
     public string? SortByDirection { get; set; } = "asc";

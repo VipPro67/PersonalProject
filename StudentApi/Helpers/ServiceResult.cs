@@ -7,26 +7,40 @@ public enum ResultType
     Unauthorized,
     InternalServerError
 }
-public class ServiceResult
+public class Pagination
+{
+    public int TotalItems { get; set; }
+    public int CurrentPage { get; set; }
+    public int TotalPage { get; set; }
+    public int ItemsPerPage { get; set; }
+}
+
+public class ServiceResult<T>
 {
     public ResultType Type { get; set; }
     public string? Message { get; set; }
-    public Object? Data { get; set; }
-    public Object? Pagination { get; set; }
+    public T? Data { get; set; }
+    public Pagination? Pagination { get; set; }
 
-    public ServiceResult(Object data, string message)
+    public ServiceResult()
+    {
+    }
+
+    public ServiceResult(T data, string message)
     {
         Type = ResultType.Ok;
         Message = message;
         Data = data;
     }
-    public ServiceResult(Object data, string message, Object? pagination)
+
+    public ServiceResult(T data, string message, Pagination? pagination)
     {
         Type = ResultType.Ok;
         Message = message;
         Data = data;
         Pagination = pagination;
     }
+
     public ServiceResult(ResultType type, string message)
     {
         Type = type;
