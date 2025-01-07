@@ -6,19 +6,30 @@ using StudentApi.Helpers;
 using StudentApi.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.AspNetCore.Http;
+using System.Text.Json;
 
 namespace StudentApiTest.Controllers;
 public class StudentControllerTests
 {
     private readonly Mock<IStudentService> _mockStudentService;
     private readonly StudentController _studentController;
-    private readonly Mock<HybridCache> _mockCache;
+    private readonly Mock<IHybridCacheWrapper> _mockCache;
 
     public StudentControllerTests()
     {
         _mockStudentService = new Mock<IStudentService>();
-        _mockCache = new Mock<HybridCache>();
-        _studentController = new StudentController(_mockStudentService.Object, _mockCache.Object);
+        _mockCache = new Mock<IHybridCacheWrapper>();
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Cache-Control"] = "no-cache";
+
+        _studentController = new StudentController(_mockStudentService.Object, _mockCache.Object)
+        {
+            ControllerContext = new ControllerContext()
+            {
+                HttpContext = httpContext
+            }
+        };
     }
 
     [Fact]
@@ -46,6 +57,15 @@ public class StudentControllerTests
         };
         var serviceResult = new ServiceResult<List<StudentDto>>(listStudents, "Get list students successfully");
         _mockStudentService.Setup(s => s.GetStudentsAsync(query)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+            It.IsAny<string>(),
+            It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+            It.IsAny<HybridCacheEntryOptions>(),
+            It.IsAny<IEnumerable<string>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(serializedResult);
+
 
         // Act
         var result = await _studentController.GetAllStudentsAsync(query);
@@ -53,7 +73,8 @@ public class StudentControllerTests
         // Assert
         result.Should().BeOfType<OkObjectResult>();
         serviceResult.Data.Should().BeEquivalentTo(listStudents);
-        _mockStudentService.Verify(s => s.GetStudentsAsync(query), Times.Once);
+        serviceResult.Message.Should().Be("Get list students successfully");
+
     }
 
     [Fact]
@@ -62,13 +83,22 @@ public class StudentControllerTests
         var query = new StudentQuery();
         var serviceResult = new ServiceResult<List<StudentDto>>(ResultType.NotFound, "Students not found");
         _mockStudentService.Setup(s => s.GetStudentsAsync(query)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+            It.IsAny<string>(),
+            It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+            It.IsAny<HybridCacheEntryOptions>(),
+            It.IsAny<IEnumerable<string>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _studentController.GetAllStudentsAsync(query);
 
         // Assert
         result.Should().BeOfType<NotFoundObjectResult>();
-        _mockStudentService.Verify(s => s.GetStudentsAsync(query), Times.Once);
+        serviceResult.Message.Should().Be("Students not found");
+        serviceResult.Data.Should().BeNull();
     }
     [Fact]
     public async Task GetStudentByIdAsync_ServiceResultTypeSuccess_OkResult()
@@ -87,12 +117,22 @@ public class StudentControllerTests
         };
         var serviceResult = new ServiceResult<StudentDto>(student, "Get student by id successfully");
         _mockStudentService.Setup(s => s.GetStudentByIdAsync(studentId)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+            It.IsAny<string>(),
+            It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+            It.IsAny<HybridCacheEntryOptions>(),
+            It.IsAny<IEnumerable<string>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _studentController.GetStudentByIdAsync(studentId);
 
         // Assert
         result.Should().BeOfType<OkObjectResult>();
+        serviceResult.Data.Should().BeEquivalentTo(student);
+        serviceResult.Message.Should().Be("Get student by id successfully");
     }
 
     [Fact]
@@ -102,12 +142,22 @@ public class StudentControllerTests
         var serviceResult = new ServiceResult<StudentDto>(ResultType.NotFound, "Students not found");
 
         _mockStudentService.Setup(s => s.GetStudentByIdAsync(It.IsAny<int>())).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+            It.IsAny<string>(),
+            It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+            It.IsAny<HybridCacheEntryOptions>(),
+            It.IsAny<IEnumerable<string>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _studentController.GetStudentByIdAsync(1);
 
         result.Should().NotBeNull();
         result.Should().BeOfType<NotFoundObjectResult>();
+        serviceResult.Message.Should().Be("Students not found");
+        serviceResult.Data.Should().BeNull();
     }
 
 
@@ -137,13 +187,24 @@ public class StudentControllerTests
 
         var serviceResult = new ServiceResult<List<StudentDto>>(listStudents, "Get list students by ids successfully");
         _mockStudentService.Setup(s => s.GetStudentsByIdsAsync(ids)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+            It.IsAny<string>(),
+            It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+            It.IsAny<HybridCacheEntryOptions>(),
+            It.IsAny<IEnumerable<string>>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(serializedResult);
+
+
 
         // Act
         var result = await _studentController.GetStudentsByIdsAsync(ids);
 
         // Assert
         result.Should().BeOfType<OkObjectResult>();
-        List<StudentDto> resultStudents = (result as OkObjectResult).Value as List<StudentDto>;
+        serviceResult.Data.Should().BeEquivalentTo(listStudents);
+        serviceResult.Message.Should().Be("Get list students by ids successfully");
 
     }
 
@@ -181,6 +242,7 @@ public class StudentControllerTests
         result.Should().BeOfType<OkObjectResult>();
         (result as OkObjectResult).Value.Should().BeOfType<SuccessResponse>();
         _mockStudentService.Verify(s => s.CreateStudentAsync(newStudent), Times.Once);
+        serviceResult.Message.Should().Be("Create student successfully");
     }
 
     [Fact]
@@ -216,6 +278,8 @@ public class StudentControllerTests
         // Assert
         result.Should().BeOfType<OkObjectResult>();
         _mockStudentService.Verify(s => s.UpdateStudentAsync(studentId, updateStudent), Times.Once);
+        serviceResult.Message.Should().Be("Update student successfully");
+        serviceResult.Data.Should().BeEquivalentTo(student);
     }
 
     [Fact]

@@ -1,8 +1,10 @@
+using System.Text.Json;
 using CourseApi.Controllers;
 using CourseApi.DTOs;
 using CourseApi.Helpers;
 using CourseApi.Services;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Hybrid;
 using Moq;
@@ -13,41 +15,45 @@ public class EnrollmentControllerTests
 {
     private readonly Mock<IEnrollmentService> _mockEnrollmentService;
     private readonly EnrollmentController _enrollmentController;
-    private readonly Mock<HybridCache> _mockCache;
+    private readonly Mock<IHybridCacheWrapper> _mockCache;
 
     public EnrollmentControllerTests()
     {
         _mockEnrollmentService = new Mock<IEnrollmentService>();
-        _mockCache = new Mock<HybridCache>();
-        _enrollmentController = new EnrollmentController(_mockEnrollmentService.Object, _mockCache.Object);
+        _mockCache = new Mock<IHybridCacheWrapper>();
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Cache-Control"] = "no-cache";
+        _enrollmentController = new EnrollmentController(_mockEnrollmentService.Object, _mockCache.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = httpContext }
+        };
     }
     [Fact]
     public async Task GetAllEnrollmentsAsync_ServiceResultTypeSuccess_OkResult()
     {
         // Arrange
-        var enrollments = new List<EnrollmentDto>
-        {
-            new EnrollmentDto
-            {
-                EnrollmentId = 1,
-                CourseId = "C001",
-                StudentId = 1,
-            }
-        };
-        var query = new EnrollmentQuery{};
-        var serviceResult = new ServiceResult<List<EnrollmentDto>>(enrollments, "Get all enrollments successfully");
-        _mockEnrollmentService.Setup(s => s.GetAllEnrollmentsAsync(query)).ReturnsAsync(serviceResult);
 
+        var query = new EnrollmentQuery { };
+        var expectedEnrollments = new List<EnrollmentDto> { };
+        var serviceResult = new ServiceResult<List<EnrollmentDto>> { Type = ResultType.Ok, Data = expectedEnrollments, Message = "Get all enrollments successfully" };
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
         // Act
         var result = await _enrollmentController.GetAllEnrollmentsAsync(query);
 
         // Assert
-        result.Should().BeOfType<OkObjectResult>();
-        var okResult = result as OkObjectResult;
-        okResult.Value.Should().BeOfType<SuccessResponse>();
-        var successResponse = okResult.Value as SuccessResponse;
-        successResponse.Data.Should().BeEquivalentTo(enrollments);
+        var actionResult = Assert.IsType<OkObjectResult>(result);
+        var actualResult = Assert.IsType<SuccessResponse>(actionResult.Value);
+        actualResult.Message.Should().Be("Get all enrollments successfully");
+        Assert.Equal(expectedEnrollments, actualResult.Data);
     }
+
     [Fact]
     public async Task GetEnrollmentByIdAsync_ValidId_OkResult()
     {
@@ -59,18 +65,25 @@ public class EnrollmentControllerTests
             StudentId = 1,
             CourseId = "C001",
         };
-        var serviceResult = new ServiceResult<EnrollmentDto>(enrollmentDto, "Enrollment found successfully");
+        var serviceResult = new ServiceResult<EnrollmentDto> { Type = ResultType.Ok, Data = enrollmentDto, Message = "Enrollment retrieved successfully" };
         _mockEnrollmentService.Setup(s => s.GetEnrollmentByIdAsync(enrollmentId)).ReturnsAsync(serviceResult);
-
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
         // Act
         var result = await _enrollmentController.GetEnrollmentByIdAsync(enrollmentId);
-
         // Assert
         result.Should().BeOfType<OkObjectResult>();
         var okResult = result as OkObjectResult;
         okResult.Value.Should().BeOfType<SuccessResponse>();
         var successResponse = okResult.Value as SuccessResponse;
         successResponse.Data.Should().BeEquivalentTo(enrollmentDto);
+        successResponse.Message.Should().Be("Enrollment retrieved successfully");
     }
     [Fact]
     public async Task GetEnrollmentByIdAsync_InvalidId_NotFound()
@@ -79,6 +92,14 @@ public class EnrollmentControllerTests
         int invalidId = 999;
         var serviceResult = new ServiceResult<EnrollmentDto>(ResultType.NotFound, "Enrollment not found");
         _mockEnrollmentService.Setup(s => s.GetEnrollmentByIdAsync(invalidId)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _enrollmentController.GetEnrollmentByIdAsync(invalidId);
@@ -102,6 +123,14 @@ public class EnrollmentControllerTests
         };
         var serviceResult = new ServiceResult<List<EnrollmentDto>>(enrollments, "Enrollments retrieved successfully");
         _mockEnrollmentService.Setup(s => s.GetEnrollmentsByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _enrollmentController.GetEnrollmentsByCourseIdAsync(courseId);
@@ -126,6 +155,14 @@ public class EnrollmentControllerTests
         };
         var serviceResult = new ServiceResult<List<EnrollmentDto>>(enrollments, "Enrollments retrieved successfully");
         _mockEnrollmentService.Setup(s => s.GetEnrollmentsByStudentIdAsync(studentId)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _enrollmentController.GetEnrollmentsByStudentIdAsync(studentId);
@@ -241,4 +278,8 @@ public class EnrollmentControllerTests
         var errorResponse = notFoundResult.Value as ErrorResponse;
         errorResponse.Message.Should().Be("Enrollment not found");
     }
+}
+
+internal class HttpRequestBase
+{
 }

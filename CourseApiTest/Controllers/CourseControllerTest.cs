@@ -1,8 +1,10 @@
+using System.Text.Json;
 using CourseApi.Controllers;
 using CourseApi.DTOs;
 using CourseApi.Helpers;
 using CourseApi.Services;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Hybrid;
 using Moq;
@@ -12,13 +14,19 @@ public class CourseControllerTests
 {
     private readonly Mock<ICourseService> _mockCourseService;
     private readonly CourseController _courseController;
-    private readonly Mock<HybridCache> _mockCache;
+    private readonly Mock<IHybridCacheWrapper> _mockCache;
 
     public CourseControllerTests()
     {
         _mockCourseService = new Mock<ICourseService>();
-        _mockCache = new Mock<HybridCache>();
-        _courseController = new CourseController(_mockCourseService.Object, _mockCache.Object);
+        _mockCache = new Mock<IHybridCacheWrapper>();
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Cache-Control"] = "no-cache";
+
+        _courseController = new CourseController(_mockCourseService.Object, _mockCache.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = httpContext }
+        };
     }
 
     [Fact]
@@ -43,6 +51,14 @@ public class CourseControllerTests
        };
         var serviceResult = new ServiceResult<List<CourseDto>>(listCourses, "Get list course successfully");
         _mockCourseService.Setup(s => s.GetCoursesAsync(query)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _courseController.GetAllCoursesAsync(query);
@@ -61,6 +77,14 @@ public class CourseControllerTests
         var query = new CourseQuery();
         var serviceResult = new ServiceResult<List<CourseDto>>(ResultType.NotFound, "Courses not found");
         _mockCourseService.Setup(s => s.GetCoursesAsync(query)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
         // Act
         var result = await _courseController.GetAllCoursesAsync(query);
         // Assert
@@ -85,6 +109,14 @@ public class CourseControllerTests
         };
         var serviceResult = new ServiceResult<CourseDto>(courseDto, "Course found successfully");
         _mockCourseService.Setup(s => s.GetCourseByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _courseController.GetCourseByIdAsync(courseId);
@@ -104,6 +136,14 @@ public class CourseControllerTests
         var courseId = "C001";
         var serviceResult = new ServiceResult<CourseDto>(ResultType.NotFound, "Course not found");
         _mockCourseService.Setup(s => s.GetCourseByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _courseController.GetCourseByIdAsync(courseId);
@@ -125,6 +165,14 @@ public class CourseControllerTests
         };
         var serviceResult = new ServiceResult<List<StudentDto>>(listStudents, "Get list of students successfully");
         _mockCourseService.Setup(s => s.GetStudentsByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _courseController.GetStudentsInCourseAsync(courseId);
@@ -143,6 +191,14 @@ public class CourseControllerTests
         var courseId = "C001";
         var serviceResult = new ServiceResult<List<StudentDto>>(ResultType.NotFound, "Course not found");
         _mockCourseService.Setup(s => s.GetStudentsByCourseIdAsync(courseId)).ReturnsAsync(serviceResult);
+        var serializedResult = JsonSerializer.Serialize(serviceResult);
+        _mockCache.Setup(c => c.GetOrCreateAsync(
+             It.IsAny<string>(),
+             It.IsAny<Func<CancellationToken, ValueTask<string>>>(),
+             It.IsAny<HybridCacheEntryOptions>(),
+             It.IsAny<IEnumerable<string>>(),
+             It.IsAny<CancellationToken>()))
+         .ReturnsAsync(serializedResult);
 
         // Act
         var result = await _courseController.GetStudentsInCourseAsync(courseId);
@@ -183,6 +239,7 @@ public class CourseControllerTests
         };
         var serviceResult = new ServiceResult<CourseDto>(courseDto, "Create course successfully");
         _mockCourseService.Setup(s => s.CreateCourseAsync(createCourseDto)).ReturnsAsync(serviceResult);
+        
         // Act
         var result = await _courseController.AddCourseAsync(createCourseDto);
         // Assert
@@ -266,7 +323,7 @@ public class CourseControllerTests
         var courseId = "C001";
         var serviceResult = new ServiceResult<CourseDto>(ResultType.NotFound, "Course not found");
         _mockCourseService.Setup(s => s.UpdateCourseAsync(courseId, It.IsAny<UpdateCourseDto>())).ReturnsAsync(serviceResult);
-    
+
         // Act
         var result = await _courseController.UpdateCourseAsync(courseId, It.IsAny<UpdateCourseDto>());
         // Assert
