@@ -29,4 +29,5 @@ The project is organized into several key components:
 - FluentValidation for input validation
 - AutoMapper for object mapping
 - Unit Testing with xUnit
-
+- gRPC for request between service
+- HybridCache with MemCache and Redis
