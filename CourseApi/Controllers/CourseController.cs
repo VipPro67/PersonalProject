@@ -17,9 +17,9 @@ namespace CourseApi.Controllers
     public class CourseController : ControllerBase
     {
         private readonly ICourseService _courseService;
-        private readonly HybridCache _cache;
+        private readonly IHybridCacheWrapper _cache;
 
-        public CourseController(ICourseService courseService, HybridCache cache)
+        public CourseController(ICourseService courseService, IHybridCacheWrapper cache)
         {
             _courseService = courseService;
             _cache = cache;

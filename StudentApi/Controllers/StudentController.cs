@@ -15,24 +15,25 @@ namespace StudentApi.Controllers
     public class StudentController : ControllerBase
     {
         private readonly IStudentService _studentService;
-        private readonly HybridCache _cache;
+        private readonly IHybridCacheWrapper _cache;
 
-        public StudentController(IStudentService studentService, HybridCache cache)
+        public StudentController(IStudentService studentService, IHybridCacheWrapper cache)
         {
             _studentService = studentService;
             _cache = cache;
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetAllStudentsAsync([FromQuery] StudentQuery query, CancellationToken token = default)
         {
             var rawCacheKey = JsonSerializer.Serialize(query);
             var cacheKey = $"enrollments_{GenerateHash.Hash(rawCacheKey)}";
-            
+
             var needCache = Request.Headers.TryGetValue("Cache-Control", out var cacheControl);
             if (needCache && cacheControl.Contains("no-cache"))
             {
-               await  _cache.RemoveAsync(cacheKey);
+                await _cache.RemoveAsync(cacheKey);
             }
             var cachedResult = await _cache.GetOrCreateAsync(
                 cacheKey,

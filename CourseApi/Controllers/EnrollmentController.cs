@@ -15,12 +15,13 @@ namespace CourseApi.Controllers;
 public class EnrollmentController : ControllerBase
 {
     private readonly IEnrollmentService _enrollmentService;
-    private readonly HybridCache _cache;
-    public EnrollmentController(IEnrollmentService enrollmentService, HybridCache cache)
+    private readonly IHybridCacheWrapper _cache;
+    public EnrollmentController(IEnrollmentService enrollmentService, IHybridCacheWrapper cache)
     {
         _enrollmentService = enrollmentService;
         _cache = cache;
     }
+
 
     [HttpGet]
     public async Task<IActionResult> GetAllEnrollmentsAsync([FromQuery] EnrollmentQuery query, CancellationToken token = default)
