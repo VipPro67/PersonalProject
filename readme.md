@@ -5,9 +5,7 @@
 This project is a comprehensive web application built using .NET Core, implementing a microservices architecture. It consists of multiple APIs (Auth, Course, Student) and an API Gateway for centralized routing and authentication.
 
 ## Demo
-Swagger https://20.108.26.12:5000/swagger/index.html
-A basic UI demo is available at: http://20.108.26.12:3000/
-Or https://github.com/VipPro67/PersonalProjectUI
+https://github.com/VipPro67/PersonalProjectUI
 
 ## Project Structure
 
